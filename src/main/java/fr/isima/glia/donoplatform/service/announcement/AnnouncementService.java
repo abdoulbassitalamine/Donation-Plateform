@@ -1,8 +1,9 @@
 package fr.isima.glia.donoplatform.service.announcement;
 
+import fr.isima.glia.donoplatform.controller.AnnouncementController;
+import fr.isima.glia.donoplatform.controller.ImageController;
+import fr.isima.glia.donoplatform.controller.UserController;
 import fr.isima.glia.donoplatform.dto.AnnouncementDto;
-import fr.isima.glia.donoplatform.dto.ImageDto;
-import fr.isima.glia.donoplatform.dto.KeywordDto;
 import fr.isima.glia.donoplatform.enums.AnnouncementStatus;
 import fr.isima.glia.donoplatform.exceptions.AnnouncementNotFoundException;
 import fr.isima.glia.donoplatform.exceptions.UnauthorizedAccessException;
@@ -26,6 +27,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.hibernate.Hibernate;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @Service
 @RequiredArgsConstructor
@@ -70,9 +75,49 @@ public class AnnouncementService implements IAnnouncementService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public AnnouncementDto convertToDto(Announcement announcement) {
+        Hibernate.initialize(announcement.getImages());
+        Hibernate.initialize(announcement.getKeywords());
 
-        return modelMapper.map(announcement, AnnouncementDto.class);
+        AnnouncementDto dto = modelMapper.map(announcement, AnnouncementDto.class);
+
+        // ============================================================
+        // HATEOAS - Ajout des liens hypermedia
+        // ============================================================
+        try {
+            // Self link
+            dto.add(linkTo(methodOn(AnnouncementController.class)
+                    .getByIdJson(announcement.getId(), null))
+                    .withSelfRel());
+
+            // Owner link
+            dto.add(linkTo(methodOn(UserController.class)
+                    .getUserByIdJson(announcement.getOwner().getId(), null))
+                    .withRel("owner"));
+
+            // Images link (si images présentes)
+            if (!announcement.getImages().isEmpty()) {
+                dto.add(linkTo(methodOn(ImageController.class)
+                        .getImagesByAnnouncementJson(announcement.getId(), null))
+                        .withRel("images"));
+            }
+
+            // Update link (si propriétaire)
+            dto.add(linkTo(methodOn(AnnouncementController.class)
+                    .updateJson(announcement.getId(), null, null))
+                    .withRel("update"));
+
+            // Delete link (si propriétaire)
+            dto.add(linkTo(methodOn(AnnouncementController.class)
+                    .deleteJson(announcement.getId(), null))
+                    .withRel("delete"));
+
+        } catch (Exception e) {
+            // Si erreur de génération de lien, on continue sans bloquer
+        }
+
+        return dto;
     }
 
     @Override

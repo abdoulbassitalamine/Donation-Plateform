@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title th:text="'Lot #' + ${batch.id} + ' - DonoPlatform'">Détail du lot</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <!-- En-tête -->
+    <div class="mb-8">
+        <div class="flex items-center text-sm text-gray-600 mb-4">
+            <a th:href="@{/batches}" class="hover:text-blue-600 transition">
+                ← Retour aux lots
+            </a>
+        </div>
+
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg shadow-xl p-8">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h1 class="text-4xl font-bold mb-3">
+                        📦 Lot #<span th:text="${batch.id}">1</span>
+                    </h1>
+                    <p class="text-blue-100 mb-4">
+                        Créé le <span th:text="${#temporals.format(batch.createdAt, 'dd MMMM yyyy à HH:mm')}">date</span>
+                    </p>
+                    <div class="flex items-center space-x-4">
+                        <div class="bg-white/20 px-4 py-2 rounded-full">
+                            <span class="font-semibold">👤 </span>
+                            <span th:text="${batch.ownerUsername}">Propriétaire</span>
+                        </div>
+                        <div class="bg-white/20 px-4 py-2 rounded-full">
+                            <span class="font-semibold">📦 </span>
+                            <span th:text="${batch.announcements.size()}">0</span> annonce(s)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div th:if="${batch.ownerId == userId}">
+                    <form th:action="@{/batches/{id}/delete(id=${batch.id})}"
+                          method="POST"
+                          onsubmit="return confirm('Voulez-vous vraiment supprimer ce lot ?\nLes annonces ne seront pas supprimées.');">
+                        <button type="submit"
+                                class="bg-red-500/80 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-semibold transition">
+                            🗑️ Supprimer le lot
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques du lot (CORRIGÉES POUR SPEL) -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm mb-1">Total annonces</p>
+                    <p class="text-3xl font-bold text-gray-900" th:text="${batch.announcements.size()}">0</p>
+                </div>
+                <div class="text-4xl">📦</div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm mb-1">Disponibles</p>
+                    <p class="text-3xl font-bold text-green-600"
+                       th:text="${batch.announcements.?[status.name() == 'AVAILABLE'].size()}">0</p>
+                </div>
+                <div class="text-4xl">✅</div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm mb-1">Réservés</p>
+                    <p class="text-3xl font-bold text-yellow-600"
+                       th:text="${batch.announcements.?[status.name() == 'RESERVED'].size()}">0</p>
+                </div>
+                <div class="text-4xl">⏳</div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm mb-1">Donnés</p>
+                    <p class="text-3xl font-bold text-gray-600"
+                       th:text="${batch.announcements.?[status.name() == 'GIVEN'].size()}">0</p>
+                </div>
+                <div class="text-4xl">🎁</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Annonces du lot -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">
+            📋 Annonces du lot
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div th:each="announcement : ${batch.announcements}"
+                 class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition cursor-pointer"
+                 th:onclick="|window.location.href='/announcements/${announcement.id}'|">
+
+                <!-- Image -->
+                <div class="h-48 bg-gray-200 overflow-hidden">
+                    <img th:if="${!announcement.images.isEmpty()}"
+                         th:src="@{/images/{id}/download(id=${announcement.images.iterator().next().id})}"
+                         th:alt="${announcement.title}"
+                         class="w-full h-full object-cover">
+                    <div th:unless="${!announcement.images.isEmpty()}"
+                         class="w-full h-full flex items-center justify-center text-gray-400 text-6xl">
+                        📦
+                    </div>
+                </div>
+
+                <!-- Contenu -->
+                <div class="p-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2"
+                        th:text="${announcement.title}">
+                        Titre de l'annonce
+                    </h3>
+
+                    <p class="text-sm text-gray-600 mb-3 line-clamp-2"
+                       th:text="${announcement.description}">
+                        Description...
+                    </p>
+
+                    <!-- Badges -->
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <span th:classappend="${announcement.status.name() == 'AVAILABLE' ? 'bg-green-100 text-green-800' :
+                                              announcement.status.name() == 'RESERVED' ? 'bg-yellow-100 text-yellow-800' :
+                                              'bg-gray-100 text-gray-800'}"
+                              class="text-xs px-2 py-1 rounded-full font-semibold"
+                              th:text="${announcement.status.label}">
+                            Statut
+                        </span>
+                        <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-semibold"
+                              th:text="${announcement.itemCondition.label}">
+                            État
+                        </span>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="text-sm text-gray-500 pt-3 border-t border-gray-200">
+                        📍 <span th:text="${announcement.geographicArea}">Zone</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message si vide -->
+        <div th:if="${batch.announcements.isEmpty()}" class="text-center py-12 text-gray-500">
+            <div class="text-6xl mb-4">📦</div>
+            <p class="text-lg">Ce lot ne contient aucune annonce</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
+</body>
+</html>

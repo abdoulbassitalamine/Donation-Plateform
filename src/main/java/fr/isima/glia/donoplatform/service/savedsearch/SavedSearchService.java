@@ -1,6 +1,7 @@
 package fr.isima.glia.donoplatform.service.savedsearch;
 
-import fr.isima.glia.donoplatform.dto.KeywordDto;
+import fr.isima.glia.donoplatform.controller.SearchController;
+import fr.isima.glia.donoplatform.controller.UserController;
 import fr.isima.glia.donoplatform.dto.SavedSearchDto;
 import fr.isima.glia.donoplatform.exceptions.ResourceNotFoundException;
 import fr.isima.glia.donoplatform.exceptions.UnauthorizedAccessException;
@@ -21,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @Service
 @RequiredArgsConstructor
@@ -63,9 +65,42 @@ public class SavedSearchService implements ISavedSearchService {
 
     @Override
     public SavedSearchDto convertToDto(SavedSearch savedSearch) {
+        SavedSearchDto dto = modelMapper.map(savedSearch, SavedSearchDto.class);
 
+        // ============================================================
+        // HATEOAS - Ajout des liens hypermedia
+        // ============================================================
+        try {
+            // Self link
+            dto.add(linkTo(methodOn(SearchController.class)
+                    .getSavedSearchByIdJson(savedSearch.getId()))
+                    .withSelfRel());
 
-        return modelMapper.map(savedSearch, SavedSearchDto.class);
+            // User link
+            dto.add(linkTo(methodOn(UserController.class)
+                    .getUserByIdJson(savedSearch.getUser().getId(), null))
+                    .withRel("user"));
+
+            // Execute search link (on pointe vers la recherche POST JSON)
+            dto.add(linkTo(methodOn(SearchController.class)
+                    .searchAnnouncementsJson(null, null, 0, 10))
+                    .withRel("execute"));
+
+            // Update link
+            dto.add(linkTo(methodOn(SearchController.class)
+                    .updateSavedSearchJson(savedSearch.getId(), null, null))
+                    .withRel("update"));
+
+            // Delete link
+            dto.add(linkTo(methodOn(SearchController.class)
+                    .deleteSavedSearchJson(savedSearch.getId(), null))
+                    .withRel("delete"));
+
+        } catch (Exception e) {
+            // Si erreur de génération de lien, on continue sans bloquer
+        }
+
+        return dto;
     }
 
     @Override

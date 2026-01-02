@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<header th:fragment="header" class="bg-white shadow-md">
+    <div class="container mx-auto px-4 py-4">
+        <div class="flex justify-between items-center">
+            <!-- Logo -->
+            <a th:href="@{/}" class="flex items-center space-x-2">
+                <span class="text-2xl">🎁</span>
+                <h1 class="text-2xl font-bold text-blue-600">DonoPlatform</h1>
+            </a>
+
+            <!-- Actions utilisateur -->
+            <div class="flex items-center space-x-4">
+                <div th:if="${#authorization.expression('isAuthenticated()')}"
+                     class="flex items-center space-x-4">
+                    <span class="text-gray-700 font-medium" th:text="${#authentication.name}">User</span>
+                    <a th:href="@{/auth/logout}"
+                       class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded transition">
+                        Déconnexion
+                    </a>
+                </div>
+
+                <div th:unless="${#authorization.expression('isAuthenticated()')}"
+                     class="flex items-center space-x-3">
+                    <a th:href="@{/auth/login}"
+                       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition">
+                        Connexion
+                    </a>
+                    <a th:href="@{/auth/register}"
+                       class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded transition">
+                        Inscription
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+</body>
+</html>

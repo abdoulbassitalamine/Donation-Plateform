@@ -1,5 +1,7 @@
 package fr.isima.glia.donoplatform.service.image;
 
+import fr.isima.glia.donoplatform.controller.AnnouncementController;
+import fr.isima.glia.donoplatform.controller.ImageController;
 import fr.isima.glia.donoplatform.dto.ImageDto;
 import fr.isima.glia.donoplatform.exceptions.ResourceNotFoundException;
 import fr.isima.glia.donoplatform.model.Announcement;
@@ -11,6 +13,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -51,7 +54,38 @@ public class ImageService implements IImageService {
     @Override
     public ImageDto convertToDto(Image image) {
         ImageDto dto = modelMapper.map(image, ImageDto.class);
-        dto.setDownloadUrl("/api/images/" + image.getId() + "/download");
+
+        // ============================================================
+        // HATEOAS - Ajout des liens hypermedia
+        // ============================================================
+        try {
+            // Self link
+            dto.add(linkTo(methodOn(ImageController.class)
+                    .getImageByIdJson(image.getId(), null))
+                    .withSelfRel());
+
+            // Download link (public)
+            dto.add(linkTo(methodOn(ImageController.class)
+                    .downloadImage(image.getId(), null))
+                    .withRel("download"));
+
+            // Announcement link
+            dto.add(linkTo(methodOn(AnnouncementController.class)
+                    .getByIdJson(image.getAnnouncement().getId(), null))
+                    .withRel("announcement"));
+
+            // Delete link
+            dto.add(linkTo(methodOn(ImageController.class)
+                    .deleteImageJson(image.getId(), null))
+                    .withRel("delete"));
+
+        } catch (Exception e) {
+            // Si erreur de génération de lien, on continue sans bloquer
+        }
+
+        // URL de téléchargement (legacy - pour compatibilité)
+        dto.setDownloadUrl("/images/" + image.getId() + "/download");
+
         return dto;
     }
 

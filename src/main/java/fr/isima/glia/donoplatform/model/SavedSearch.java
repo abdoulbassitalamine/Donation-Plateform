@@ -7,6 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -30,6 +31,10 @@ public class SavedSearch {
     @Enumerated(EnumType.STRING)
     private ItemCondition itemCondition;
 
+    private Boolean handDelivery;
+
+    private Boolean canShip;
+
     @Column(nullable = false)
     @Builder.Default
     private Boolean notificationsEnabled = true;
@@ -46,10 +51,15 @@ public class SavedSearch {
 
     @ManyToMany
     @JoinTable(
-        name = "saved_search_keywords",
-        joinColumns = @JoinColumn(name = "saved_search_id"),
-        inverseJoinColumns = @JoinColumn(name = "keyword_id")
+            name = "saved_search_keywords",
+            joinColumns = @JoinColumn(name = "saved_search_id"),
+            inverseJoinColumns = @JoinColumn(name = "keyword_id")
     )
     @Builder.Default
     private Set<Keyword> keywords = new HashSet<>();
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, geographicArea, itemCondition, notificationsEnabled, createdAt);
+    }
 }

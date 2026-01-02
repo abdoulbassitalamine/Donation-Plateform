@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav th:fragment="navbar" class="bg-blue-600 text-white shadow-lg">
+    <div class="container mx-auto px-4">
+        <ul class="flex space-x-1">
+            <li>
+                <a th:href="@{/}"
+                   class="block px-4 py-3 hover:bg-blue-700 transition">
+                    Accueil
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/announcements}"
+                   class="block px-4 py-3 hover:bg-blue-700 transition">
+                    Annonces
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/search}"
+                   class="block px-4 py-3 hover:bg-blue-700 transition">
+                    Rechercher
+                </a>
+            </li>
+
+            <!-- Menu pour utilisateurs connectés -->
+            <li th:if="${#authorization.expression('isAuthenticated()')}">
+                <a th:href="@{/announcements/create}"
+                   class="block px-4 py-3 hover:bg-blue-700 transition font-semibold">
+                    + Publier
+                </a>
+            </li>
+            <li th:if="${#authorization.expression('isAuthenticated()')}">
+                <a th:href="@{/profile/{id}(id=${#authentication.principal.id})}"
+                   class="block px-4 py-3 hover:bg-blue-700 transition">
+                    Mon profil
+                </a>
+            </li>
+            <li th:if="${#authorization.expression('isAuthenticated()')}">
+                <a th:href="@{/messages(userId=${#authentication.principal.id})}"
+                   class="block px-4 py-3 hover:bg-blue-700 transition relative">
+                    Messages
+                    <span th:if="${unreadCount > 0}"
+                          class="absolute top-1 right-1 bg-red-500 text-white text-xs rounded-full px-2 py-0.5"
+                          th:text="${unreadCount}">
+                        </span>
+                </a>
+            </li>
+            <li th:if="${#authorization.expression('isAuthenticated()')}">
+                <a th:href="@{/batches(userId=${#authentication.principal.id})}"
+                   class="block px-4 py-3 hover:bg-blue-700 transition">
+                    📦 Mes lots
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
+</body>
+</html>

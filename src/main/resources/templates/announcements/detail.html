@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout}">
+<head>
+    <title th:text="${announcement.title} + ' - DonoPlatform'">Annonce - DonoPlatform</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <!-- Breadcrumb -->
+    <nav class="text-sm mb-6">
+        <ol class="flex space-x-2 text-gray-600">
+            <li><a th:href="@{/}" class="hover:text-blue-600">Accueil</a></li>
+            <li>›</li>
+            <li><a th:href="@{/announcements}" class="hover:text-blue-600">Annonces</a></li>
+            <li>›</li>
+            <li class="text-gray-900 font-medium" th:text="${announcement.title}">Titre</li>
+        </ol>
+    </nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Colonne principale -->
+        <div class="lg:col-span-2">
+            <!-- Images (inchangé) -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
+                <div th:if="${!announcement.images.isEmpty()}" class="relative">
+                    <img th:src="@{/images/{id}/download(id=${announcement.images.iterator().next().id})}"
+                         th:alt="${announcement.title}"
+                         class="w-full h-96 object-cover">
+
+                    <div th:if="${announcement.images.size() > 1}" class="flex space-x-2 p-4 overflow-x-auto">
+                        <img th:each="image : ${announcement.images}"
+                             th:src="@{/api/v1/images/{id}/download(id=${image.id})}"
+                             class="w-20 h-20 object-cover rounded cursor-pointer hover:opacity-75 transition">
+                    </div>
+                </div>
+                <div th:unless="${!announcement.images.isEmpty()}"
+                     class="h-96 bg-gray-200 flex items-center justify-center">
+                    <span class="text-gray-400 text-2xl">📦 Pas d'image disponible</span>
+                </div>
+            </div>
+
+            <!-- Informations détaillées (inchangé) -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <h1 class="text-3xl font-bold text-gray-900" th:text="${announcement.title}">Titre</h1>
+                    <div class="flex flex-col space-y-2">
+                        <span th:classappend="${announcement.status.name() == 'AVAILABLE' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}"
+                              class="text-sm px-3 py-1 rounded-full font-semibold"
+                              th:text="${announcement.status.label}">Statut</span>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-3">Description</h2>
+                    <p class="text-gray-700 whitespace-pre-line" th:text="${announcement.description}">Description...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Donneur</h3>
+                <div class="flex items-center space-x-3 mb-6">
+                    <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-inner">
+                        <span th:text="${announcement.ownerUsername.substring(0,1).toUpperCase()}">U</span>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-900" th:text="${announcement.ownerUsername}">Username</p>
+                        <p class="text-xs text-gray-500">Membre certifié</p>
+                    </div>
+                </div>
+
+                <!-- Boutons d'action -->
+                <div sec:authorize="isAuthenticated()" class="space-y-3">
+                    <a th:href="@{/messages/conversation(userId=${announcement.ownerId},announcementId=${announcement.id})}"
+                       class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition text-center shadow-md">
+                        💬 Contacter
+                    </a>
+
+                    <!-- FORMULAIRE FAVORIS MIS À JOUR -->
+                    <form th:action="@{/favorites/toggle}" method="POST">
+                        <input type="hidden" name="announcementId" th:value="${announcement.id}"/>
+
+                        <!-- Le bouton change de style selon l'état isFavorite -->
+                        <button type="submit"
+                                th:classappend="${isFavorite ? 'bg-red-50 text-red-600 border-red-200' : 'bg-gray-100 text-gray-800 border-transparent'}"
+                                class="w-full border font-semibold py-3 rounded-lg transition flex items-center justify-center space-x-2">
+                            <span th:text="${isFavorite ? '❤️' : '🤍'}"></span>
+                            <span th:text="${isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}"></span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Message si NON connecté (inchangé) -->
+                <div sec:authorize="!isAuthenticated()" class="text-center mt-4 p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                    <p class="text-sm text-gray-600 mb-3">Connectez-vous pour contacter le donneur</p>
+                    <a th:href="@{/auth/login}"
+                       class="block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition">
+                        Se connecter
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

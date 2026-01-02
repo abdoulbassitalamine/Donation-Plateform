@@ -3,11 +3,15 @@ package fr.isima.glia.donoplatform.dto;
 import fr.isima.glia.donoplatform.enums.ItemCondition;
 import fr.isima.glia.donoplatform.enums.AnnouncementStatus;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.springframework.hateoas.RepresentationModel;
+
 import java.time.LocalDateTime;
 import java.util.Set;
 
 @Data
-public class AnnouncementDto {
+@EqualsAndHashCode(callSuper = true)
+public class AnnouncementDto extends RepresentationModel<AnnouncementDto> {
     private Long id;
     private String title;
     private String description;

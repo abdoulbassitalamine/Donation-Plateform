@@ -8,6 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -84,4 +85,9 @@ public class Announcement {
     @ToString.Exclude
     @Builder.Default
     private Set<Image> images = new HashSet<>();
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, title, description, status, publicationDate, itemCondition);
+    }
 }

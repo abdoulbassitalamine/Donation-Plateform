@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout}">
+<head>
+    <title>Conversation - DonoPlatform</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <!-- En-tête de la conversation -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <a th:href="@{/messages}"
+                   class="text-gray-600 hover:text-gray-900 transition">
+                    ← Retour
+                </a>
+
+                <!-- Info de la conversation -->
+                <div class="flex items-center space-x-3" th:if="${!conversation.isEmpty()}">
+                    <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                        <span th:with="otherUser=${conversation[0].senderId == userId ? conversation[0].receiverUsername : conversation[0].senderUsername}"
+                              th:text="${otherUser.substring(0,1).toUpperCase()}">U</span>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-900">
+                            <span th:with="otherUser=${conversation[0].senderId == userId ? conversation[0].receiverUsername : conversation[0].senderUsername}"
+                                  th:text="${otherUser}">Contact</span>
+                        </h2>
+                        <p class="text-sm text-gray-600">
+                            À propos de:
+                            <a th:href="@{/announcements/{id}(id=${announcementId})}"
+                               class="text-blue-600 hover:underline font-medium"
+                               th:text="${!conversation.isEmpty() ? conversation[0].announcementTitle : 'Annonce'}">
+                                Annonce
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lien vers l'annonce -->
+            <a th:if="${!conversation.isEmpty()}"
+               th:href="@{/announcements/{id}(id=${announcementId})}"
+               class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition">
+                📢 Voir l'annonce
+            </a>
+        </div>
+    </div>
+
+    <!-- Zone de conversation -->
+    <div class="bg-white rounded-lg shadow-md">
+        <!-- Messages -->
+        <div id="messagesContainer" class="h-96 overflow-y-auto p-6 space-y-4">
+            <div th:if="${conversation.isEmpty()}" class="text-center text-gray-500 py-8">
+                Aucun message dans cette conversation
+            </div>
+
+            <div th:each="message : ${conversation}"
+                 th:classappend="${message.senderId == userId ? 'flex justify-end' : 'flex justify-start'}">
+
+                <!-- Message reçu (gauche) -->
+                <div th:if="${message.senderId != userId}"
+                     class="max-w-xs lg:max-w-md">
+                    <div class="bg-gray-100 rounded-lg p-4">
+                        <p class="text-gray-900" th:text="${message.content}">
+                            Contenu du message
+                        </p>
+                        <p class="text-xs text-gray-500 mt-2"
+                           th:text="${#temporals.format(message.sentAt, 'dd/MM/yyyy à HH:mm')}">
+                            Date
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Message envoyé (droite) -->
+                <div th:if="${message.senderId == userId}"
+                     class="max-w-xs lg:max-w-md">
+                    <div class="bg-blue-600 text-white rounded-lg p-4">
+                        <p th:text="${message.content}">
+                            Contenu du message
+                        </p>
+                        <div class="flex items-center justify-between mt-2">
+                            <p class="text-xs text-blue-100"
+                               th:text="${#temporals.format(message.sentAt, 'dd/MM/yyyy à HH:mm')}">
+                                Date
+                            </p>
+                            <span th:if="${message.read}" class="text-xs text-blue-100">✓✓</span>
+                            <span th:unless="${message.read}" class="text-xs text-blue-100">✓</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulaire d'envoi -->
+        <div class="border-t border-gray-200 p-4">
+            <form th:action="@{/messages/submit}" method="POST" class="flex space-x-4">
+
+                <!-- TOKEN CSRF -->
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <!-- Champs cachés -->
+                <input type="hidden" name="announcementId" th:value="${announcementId}">
+                <input type="hidden" name="receiverId" th:value="${receiverId}">
+
+                <textarea name="content" rows="2" required
+                          placeholder="Écrivez votre message..."
+                          class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"></textarea>
+
+                <button type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition self-end">
+                    ✉️ Envoyer
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script layout:fragment="scripts">
+    // Scroll vers le bas au chargement
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('messagesContainer');
+        if (container) {
+            container.scrollTop = container.scrollHeight;
+        }
+    });
+</script>
+</body>
+</html>

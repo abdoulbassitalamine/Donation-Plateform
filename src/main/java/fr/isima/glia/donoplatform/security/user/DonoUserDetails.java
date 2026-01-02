@@ -23,6 +23,9 @@ public class DonoUserDetails implements UserDetails {
        private String email;
        private String password;
 
+      private String firstName;
+      private String lastName;
+
        private Collection<GrantedAuthority> authorities;
 
        public static DonoUserDetails buildUserDetails(User user) {
@@ -35,6 +38,8 @@ public class DonoUserDetails implements UserDetails {
                    user.getId(),
                    user.getEmail(),
                    user.getPassword(),
+                   user.getFirstName(),
+                   user.getLastName(),
                    authorities);
        }
 

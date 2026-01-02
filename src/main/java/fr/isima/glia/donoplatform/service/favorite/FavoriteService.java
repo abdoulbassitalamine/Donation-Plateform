@@ -15,6 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+import fr.isima.glia.donoplatform.controller.FavoriteController;
+import fr.isima.glia.donoplatform.controller.AnnouncementController;
+
 @Service
 @RequiredArgsConstructor
 public class FavoriteService implements IFavoriteService {
@@ -59,7 +63,32 @@ public class FavoriteService implements IFavoriteService {
 
     @Override
     public FavoriteDto convertToDto(Favorite favorite) {
-        return modelMapper.map(favorite, FavoriteDto.class);
+        FavoriteDto dto = modelMapper.map(favorite, FavoriteDto.class);
+
+        // ============================================================
+        // HATEOAS - Ajout des liens hypermedia
+        // ============================================================
+        try {
+            // Self link
+            dto.add(linkTo(methodOn(FavoriteController.class)
+                    .getUserFavoritesJson(favorite.getUser().getId(), null))
+                    .withSelfRel());
+
+            // Announcement link
+            dto.add(linkTo(methodOn(AnnouncementController.class)
+                    .getByIdJson(favorite.getAnnouncement().getId(), null))
+                    .withRel("announcement"));
+
+            // Delete link
+            dto.add(linkTo(methodOn(FavoriteController.class)
+                    .removeFavoriteJson(favorite.getAnnouncement().getId(), null))
+                    .withRel("delete"));
+
+        } catch (Exception e) {
+            // Si erreur de génération de lien, on continue sans bloquer
+        }
+
+        return dto;
     }
 
     @Override

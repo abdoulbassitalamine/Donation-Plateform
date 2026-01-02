@@ -6,6 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -20,12 +21,6 @@ public class Batch {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 100)
-    private String name;
-
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -38,10 +33,15 @@ public class Batch {
 
     @ManyToMany
     @JoinTable(
-        name = "batch_announcements",
-        joinColumns = @JoinColumn(name = "batch_id"),
-        inverseJoinColumns = @JoinColumn(name = "announcement_id")
+            name = "batch_announcements",
+            joinColumns = @JoinColumn(name = "batch_id"),
+            inverseJoinColumns = @JoinColumn(name = "announcement_id")
     )
     @Builder.Default
     private Set<Announcement> announcements = new HashSet<>();
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, createdAt, owner.getId());
+    }
 }

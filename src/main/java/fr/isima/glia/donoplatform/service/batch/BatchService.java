@@ -1,5 +1,8 @@
 package fr.isima.glia.donoplatform.service.batch;
 
+import fr.isima.glia.donoplatform.controller.AnnouncementController;
+import fr.isima.glia.donoplatform.controller.BatchController;
+import fr.isima.glia.donoplatform.controller.UserController;
 import fr.isima.glia.donoplatform.dto.BatchDto;
 import fr.isima.glia.donoplatform.exceptions.ResourceNotFoundException;
 import fr.isima.glia.donoplatform.exceptions.UnauthorizedAccessException;
@@ -20,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 @Service
 @RequiredArgsConstructor
 public class BatchService implements IBatchService {
@@ -59,7 +63,37 @@ public class BatchService implements IBatchService {
 
     @Override
     public BatchDto convertToDto(Batch batch) {
-        return modelMapper.map(batch, BatchDto.class);
+        BatchDto dto = modelMapper.map(batch, BatchDto.class);
+
+        // ============================================================
+        // HATEOAS - Ajout des liens hypermedia
+        // ============================================================
+        try {
+            // Self link
+            dto.add(linkTo(methodOn(BatchController.class)
+                    .getBatchByIdJson(batch.getId(), null))
+                    .withSelfRel());
+
+            // Owner link
+            dto.add(linkTo(methodOn(UserController.class)
+                    .getUserByIdJson(batch.getOwner().getId(), null))
+                    .withRel("owner"));
+
+            // Announcements link
+            dto.add(linkTo(methodOn(AnnouncementController.class)
+                    .getUserAnnouncementsJson(batch.getOwner().getId()))
+                    .withRel("announcements"));
+
+            // Delete link
+            dto.add(linkTo(methodOn(BatchController.class)
+                    .deleteBatchJson(batch.getId(), null))
+                    .withRel("delete"));
+
+        } catch (Exception e) {
+            // Si erreur de génération de lien, on continue sans bloquer
+        }
+
+        return dto;
     }
 
     @Override

@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "messages")
@@ -44,4 +45,11 @@ public class Message {
     @JoinColumn(name = "announcement_id")
     @ToString.Exclude
     private Announcement announcement;
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, content, sentAt, read,
+                sender.getId(), receiver.getId(),
+                announcement != null ? announcement.getId() : null);
+    }
 }
