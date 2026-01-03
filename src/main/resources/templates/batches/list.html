@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="[http://www.thymeleaf.org](http://www.thymeleaf.org)"
-      xmlns:layout="[http://www.ultraq.net.nz/thymeleaf/layout](http://www.ultraq.net.nz/thymeleaf/layout)"
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout}">
 <head>
     <title>Mes lots - DonoPlatform</title>
@@ -23,10 +23,10 @@
         </button>
     </div>
 
-    <!-- Liste des batches (inchangée) -->
+    <!-- Liste des batches -->
     <div th:if="${!batches.isEmpty()}" class="space-y-6">
         <div th:each="batch : ${batches}" class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition">
-            <!-- Contenu du batch... -->
+            <!-- En-tête du batch -->
             <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
                 <div class="flex justify-between items-start">
                     <div class="flex-1">
@@ -36,20 +36,38 @@
                         </p>
                     </div>
                     <div class="flex space-x-2">
-                        <a th:href="@{/batches/{id}(id=${batch.id})}" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg font-semibold transition">👁️ Voir</a>
-                        <form th:action="@{/batches/{id}/delete(id=${batch.id})}" method="POST" onsubmit="return confirm('Supprimer ce lot ?');">
-                            <button type="submit" class="bg-red-500/80 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition">🗑️</button>
+                        <a th:href="@{/batches/{id}(id=${batch.id})}"
+                           class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg font-semibold transition">
+                            👁️ Voir
+                        </a>
+                        <!-- Formulaire DELETE avec _method -->
+                        <form th:action="@{/batches/{id}(id=${batch.id})}"
+                              method="POST"
+                              onsubmit="return confirm('Supprimer ce lot ?');">
+                            <input type="hidden" name="_method" value="DELETE"/>
+                            <button type="submit"
+                                    class="bg-red-500/80 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition">
+                                🗑️
+                            </button>
                         </form>
                     </div>
                 </div>
             </div>
-            <!-- Grille des annonces... -->
+
+            <!-- Grille des annonces -->
             <div class="p-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div th:each="announcement : ${batch.announcements}"
                          class="border border-gray-200 rounded-lg p-4 hover:border-blue-500 transition cursor-pointer"
                          th:onclick="|window.location.href='/announcements/${announcement.id}'|">
-                        <span th:text="${announcement.title}">Titre</span>
+                        <h4 class="font-semibold text-gray-900 mb-1 line-clamp-1" th:text="${announcement.title}">Titre</h4>
+                        <span th:classappend="${announcement.status.name() == 'AVAILABLE' ? 'bg-green-100 text-green-800' :
+                                              announcement.status.name() == 'RESERVED' ? 'bg-yellow-100 text-yellow-800' :
+                                              'bg-gray-100 text-gray-800'}"
+                              class="text-xs px-2 py-1 rounded-full font-semibold inline-block"
+                              th:text="${announcement.status.label}">
+                            Statut
+                        </span>
                     </div>
                 </div>
             </div>
@@ -60,7 +78,10 @@
     <div th:if="${batches.isEmpty()}" class="bg-white rounded-lg shadow-md p-16 text-center">
         <div class="text-8xl mb-6">📦</div>
         <h2 class="text-3xl font-bold text-gray-900 mb-4">Aucun lot créé</h2>
-        <button onclick="showCreateModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold transition text-lg">➕ Créer mon premier lot</button>
+        <button onclick="showCreateModal()"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold transition text-lg">
+            ➕ Créer mon premier lot
+        </button>
     </div>
 
     <!-- Modal de création de lot -->
@@ -99,8 +120,10 @@
                 </div>
 
                 <div class="border-t border-gray-200 p-6 bg-gray-50 flex justify-between items-center">
-                    <button type="button" onclick="closeCreateModal()" class="px-6 py-3 border rounded-lg hover:bg-gray-100 font-semibold">Annuler</button>
-                    <!-- Bouton avec ID et état désactivé par défaut -->
+                    <button type="button" onclick="closeCreateModal()"
+                            class="px-6 py-3 border rounded-lg hover:bg-gray-100 font-semibold">
+                        Annuler
+                    </button>
                     <button type="submit" id="submitBatchBtn" disabled
                             class="disabled:opacity-50 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition">
                         ✅ Créer le lot
@@ -111,14 +134,14 @@
     </div>
 </div>
 
-<!-- Fragment Scripts séparé et bien placé -->
+<!-- Scripts -->
 <th:block layout:fragment="scripts">
     <script>
         function showCreateModal() {
             const modal = document.getElementById('createBatchModal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
-            updateSelectedCount(); // Initialise l'état du bouton
+            updateSelectedCount();
         }
 
         function closeCreateModal() {
@@ -141,10 +164,8 @@
             const submitBtn = document.getElementById('submitBatchBtn');
             const countDisplay = document.getElementById('selectedCount');
 
-            // Mise à jour de l'affichage
             countDisplay.textContent = count;
 
-            // Validation : Activer le bouton seulement si count > 0
             if (count > 0) {
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
@@ -156,5 +177,13 @@
     </script>
 </th:block>
 
+<style>
+    .line-clamp-1 {
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
 </body>
 </html>

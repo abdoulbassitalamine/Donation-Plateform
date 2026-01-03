@@ -22,7 +22,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Colonne principale -->
         <div class="lg:col-span-2">
-            <!-- Images (inchangé) -->
+            <!-- Images -->
             <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
                 <div th:if="${!announcement.images.isEmpty()}" class="relative">
                     <img th:src="@{/images/{id}/download(id=${announcement.images.iterator().next().id})}"
@@ -31,7 +31,7 @@
 
                     <div th:if="${announcement.images.size() > 1}" class="flex space-x-2 p-4 overflow-x-auto">
                         <img th:each="image : ${announcement.images}"
-                             th:src="@{/api/v1/images/{id}/download(id=${image.id})}"
+                             th:src="@{/images/{id}/download(id=${image.id})}"
                              class="w-20 h-20 object-cover rounded cursor-pointer hover:opacity-75 transition">
                     </div>
                 </div>
@@ -41,7 +41,7 @@
                 </div>
             </div>
 
-            <!-- Informations détaillées (inchangé) -->
+            <!-- Informations détaillées -->
             <div class="bg-white rounded-lg shadow-lg p-6">
                 <div class="flex justify-between items-start mb-4">
                     <h1 class="text-3xl font-bold text-gray-900" th:text="${announcement.title}">Titre</h1>
@@ -74,26 +74,34 @@
 
                 <!-- Boutons d'action -->
                 <div sec:authorize="isAuthenticated()" class="space-y-3">
-                    <a th:href="@{/messages/conversation(userId=${announcement.ownerId},announcementId=${announcement.id})}"
+                    <a th:href="@{/messages/conversation(announcementId=${announcement.id})}"
                        class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition text-center shadow-md">
                         💬 Contacter
                     </a>
 
-                    <!-- FORMULAIRE FAVORIS MIS À JOUR -->
-                    <form th:action="@{/favorites/toggle}" method="POST">
+                    <!-- BOUTON AJOUTER AUX FAVORIS -->
+                    <form th:if="${!isFavorite}" th:action="@{/favorites}" method="POST">
                         <input type="hidden" name="announcementId" th:value="${announcement.id}"/>
-
-                        <!-- Le bouton change de style selon l'état isFavorite -->
                         <button type="submit"
-                                th:classappend="${isFavorite ? 'bg-red-50 text-red-600 border-red-200' : 'bg-gray-100 text-gray-800 border-transparent'}"
-                                class="w-full border font-semibold py-3 rounded-lg transition flex items-center justify-center space-x-2">
-                            <span th:text="${isFavorite ? '❤️' : '🤍'}"></span>
-                            <span th:text="${isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}"></span>
+                                class="w-full bg-gray-100 text-gray-800 border border-transparent font-semibold py-3 rounded-lg transition flex items-center justify-center space-x-2 hover:bg-gray-200">
+                            <span>🤍</span>
+                            <span>Ajouter aux favoris</span>
+                        </button>
+                    </form>
+
+                    <!-- BOUTON RETIRER DES FAVORIS -->
+                    <form th:if="${isFavorite}" th:action="@{/favorites}" method="POST">
+                        <input type="hidden" name="_method" value="DELETE"/>
+                        <input type="hidden" name="announcementId" th:value="${announcement.id}"/>
+                        <button type="submit"
+                                class="w-full bg-red-50 text-red-600 border border-red-200 font-semibold py-3 rounded-lg transition flex items-center justify-center space-x-2 hover:bg-red-100">
+                            <span>❤️</span>
+                            <span>Retirer des favoris</span>
                         </button>
                     </form>
                 </div>
 
-                <!-- Message si NON connecté (inchangé) -->
+                <!-- Message si NON connecté -->
                 <div sec:authorize="!isAuthenticated()" class="text-center mt-4 p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
                     <p class="text-sm text-gray-600 mb-3">Connectez-vous pour contacter le donneur</p>
                     <a th:href="@{/auth/login}"

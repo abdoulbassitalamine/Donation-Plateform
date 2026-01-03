@@ -11,7 +11,7 @@
         <div class="bg-white rounded-lg shadow-xl p-8">
             <h1 class="text-3xl font-bold text-gray-900 mb-8">🔍 Recherche avancée</h1>
 
-            <!-- Formulaire classique POST -->
+            <!-- Formulaire POST vers /search (déjà correct) -->
             <form th:action="@{/search}"
                   th:object="${searchRequest}"
                   method="POST"

@@ -44,8 +44,8 @@
                     <div class="col-span-4 flex items-center space-x-3">
                         <!-- Avatar -->
                         <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
-                <span th:if="${message.senderId == userId}"
-                      th:text="${message.receiverUsername.substring(0,1).toUpperCase()}">U</span>
+                            <span th:if="${message.senderId == userId}"
+                                  th:text="${message.receiverUsername.substring(0,1).toUpperCase()}">U</span>
                             <span th:unless="${message.senderId == userId}"
                                   th:text="${message.senderUsername.substring(0,1).toUpperCase()}">U</span>
                         </div>
@@ -53,8 +53,8 @@
                         <!-- Nom -->
                         <div class="min-w-0">
                             <p class="font-semibold text-gray-900 truncate">
-                    <span th:if="${message.senderId == userId}"
-                          th:text="${message.receiverUsername}">Contact</span>
+                                <span th:if="${message.senderId == userId}"
+                                      th:text="${message.receiverUsername}">Contact</span>
                                 <span th:unless="${message.senderId == userId}"
                                       th:text="${message.senderUsername}">Contact</span>
                             </p>
@@ -79,17 +79,17 @@
 
                     <!-- Date -->
                     <div class="col-span-2 flex items-center">
-            <span class="text-sm text-gray-600"
-                  th:text="${#temporals.format(message.sentAt, 'dd/MM/yyyy HH:mm')}">
-                Date
-            </span>
+                        <span class="text-sm text-gray-600"
+                              th:text="${#temporals.format(message.sentAt, 'dd/MM/yyyy HH:mm')}">
+                            Date
+                        </span>
                     </div>
 
                     <!-- Statut -->
                     <div class="col-span-1 flex items-center justify-center">
-            <span th:if="${!message.read && message.receiverId == userId}"
-                  class="w-3 h-3 bg-blue-600 rounded-full"
-                  title="Non lu"></span>
+                        <span th:if="${!message.read && message.receiverId == userId}"
+                              class="w-3 h-3 bg-blue-600 rounded-full"
+                              title="Non lu"></span>
                         <span th:if="${message.read || message.receiverId != userId}"
                               class="text-gray-400"
                               title="Lu">✓</span>

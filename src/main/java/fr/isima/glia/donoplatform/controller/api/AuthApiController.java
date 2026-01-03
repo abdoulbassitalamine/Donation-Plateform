@@ -1,4 +1,4 @@
-package fr.isima.glia.donoplatform.controller;
+package fr.isima.glia.donoplatform.controller.api;
 
 import fr.isima.glia.donoplatform.model.User;
 import fr.isima.glia.donoplatform.request.CreateUserRequest;
@@ -18,28 +18,25 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
+/**
+ * JSON API for authentication
+ */
+@RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-public class AuthController {
+public class AuthApiController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
     private final IUserService userService;
 
-    // ============================================================
-    // REGISTER - JSON (API)
-    // ============================================================
+    // Register user
     @PostMapping(value = "/register",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    public ResponseEntity<ApiResponse> registerJson(@Valid @RequestBody CreateUserRequest request) {
+    public ResponseEntity<ApiResponse> register(@Valid @RequestBody CreateUserRequest request) {
         try {
             User user = userService.createUser(request);
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -50,42 +47,11 @@ public class AuthController {
         }
     }
 
-    // ============================================================
-    // REGISTER - HTML (Web)
-    // ============================================================
-    @GetMapping(value = "/register", produces = MediaType.TEXT_HTML_VALUE)
-    public String showRegisterPage(Model model) {
-        model.addAttribute("user", new CreateUserRequest());
-        return "auth/register";
-    }
-
-    @PostMapping(value = "/register",
-            consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
-            produces = MediaType.TEXT_HTML_VALUE)
-    public String registerHtml(@Valid @ModelAttribute("user") CreateUserRequest request,
-                               BindingResult result,
-                               Model model) {
-        if (result.hasErrors()) {
-            return "auth/register";
-        }
-
-        try {
-            userService.createUser(request);
-            return "redirect:/auth/login?registered=true";
-        } catch (Exception e) {
-            model.addAttribute("error", e.getMessage());
-            return "auth/register";
-        }
-    }
-
-    // ============================================================
-    // LOGIN - JSON (API) → Retourne JWT
-    // ============================================================
+    // Login user - returns JWT
     @PostMapping(value = "/login",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    public ResponseEntity<ApiResponse> loginJson(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<ApiResponse> login(@Valid @RequestBody LoginRequest request) {
         try {
             Authentication authentication = authenticationManager
                     .authenticate(new UsernamePasswordAuthenticationToken(
@@ -105,23 +71,4 @@ public class AuthController {
                     .body(new ApiResponse(e.getMessage(), null));
         }
     }
-
-    // ============================================================
-    // LOGIN - HTML (Web) → Géré par Spring Security formLogin()
-    // ============================================================
-    @GetMapping(value = "/login", produces = MediaType.TEXT_HTML_VALUE)
-    public String showLoginPage(@RequestParam(required = false) String error,
-                                @RequestParam(required = false) String registered,
-                                Model model) {
-        if (error != null) {
-            model.addAttribute("error", "Invalid email or password");
-        }
-        if (registered != null) {
-            model.addAttribute("success", "Registration successful! You can now login.");
-        }
-        return "auth/login";
-    }
-
-    // Note: Le POST /auth/login pour HTML est géré automatiquement par
-    // Spring Security via .loginProcessingUrl("/auth/login") dans DonoConfig
 }

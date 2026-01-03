@@ -25,6 +25,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+/**
+ * Security configuration for DonoPlatform.
+ * Manages both API (JWT) and Web (Session) authentication.
+ */
 @RequiredArgsConstructor
 @EnableWebSecurity
 @Configuration
@@ -50,27 +54,19 @@ public class DonoConfig {
         return authConfig.getAuthenticationManager();
     }
 
-    // ============================================================
-    // CHAÎNE 1 : Requêtes JSON (Accept: application/json) → JWT
-    // ============================================================
+    // Chain 1: API Security (Stateless JWT)
     @Bean
     @Order(1)
     public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
         http
                 .securityMatcher(new RequestHeaderRequestMatcher("Accept", "application/json"))
                 .csrf(AbstractHttpConfigurer::disable)
-                .exceptionHandling(exception ->
-                        exception.authenticationEntryPoint(authEntryPoint))
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(authEntryPoint))
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Auth publique (même URL que HTML, mais JSON)
                         .requestMatchers("/auth/login", "/auth/register").permitAll()
-                        // Ressources publiques
                         .requestMatchers("/", "/announcements", "/announcements/*").permitAll()
-                        .requestMatchers("/images/*/download").permitAll()
-                        .requestMatchers("/search", "/search/results").permitAll()
-                        // Tout le reste nécessite JWT
+                        .requestMatchers("/images/*/download", "/search/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
@@ -78,44 +74,28 @@ public class DonoConfig {
         return http.build();
     }
 
-    // ============================================================
-    // CHAÎNE 2 : Requêtes HTML (Accept: text/html) → Sessions
-    // ============================================================
+    // Chain 2: Web Security (Session-based)
     @Bean
     @Order(2)
     public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/h2-console/**")
-                )
-                .headers(headers -> headers
-                        .frameOptions(frame -> frame.sameOrigin())
-                )
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
+                .headers(h -> h.frameOptions(f -> f.sameOrigin()))
                 .authorizeHttpRequests(auth -> auth
-                        // Pages publiques
+                        // Public routes
                         .requestMatchers("/", "/auth/login", "/auth/register").permitAll()
-                        .requestMatchers("/announcements").permitAll()                    // Liste
-                        .requestMatchers("/announcements/{id:\\d+}").permitAll()          // Détail (ID numérique)
-                        .requestMatchers("/search", "/search/results").permitAll()
-                        .requestMatchers("/images/*/download").permitAll()
-                        .requestMatchers("/css/**", "/js/**", "/h2-console/**").permitAll()
+                        .requestMatchers("/announcements", "/announcements/{id:\\d+}").permitAll()
+                        .requestMatchers("/search/**", "/images/*/download").permitAll()
+                        .requestMatchers("/css/**", "/js/**", "/h2-console/**", "/favicon.ico").permitAll()
 
-                        // Pages privées - AUTHENTIFICATION REQUISE
-                        .requestMatchers("/announcements/create").authenticated()         // Créer annonce
-                        .requestMatchers("/announcements/{id}/edit").authenticated()      // Éditer annonce
-                        .requestMatchers("/favorites/**").authenticated()                 // Favoris
-                        .requestMatchers("/batches/**").authenticated()                   // Lots
-                        .requestMatchers("/messages/**").authenticated()                  // Messages
-                        .requestMatchers("/users/**").authenticated()                     // Profil
-                        .requestMatchers("/search/saved/**").authenticated()              // Recherches sauvegardées
-
+                        // Private routes
+                        .requestMatchers("/announcements/create", "/announcements/*/edit").authenticated()
+                        .requestMatchers("/favorites/**", "/batches/**", "/messages/**").authenticated()
+                        .requestMatchers("/users/**", "/search/saved/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/auth/login")
-                        .loginProcessingUrl("/auth/login")
-                        .usernameParameter("username")
-                        .passwordParameter("password")
                         .defaultSuccessUrl("/", true)
                         .failureUrl("/auth/login?error=true")
                         .permitAll()
@@ -127,7 +107,7 @@ public class DonoConfig {
                         .deleteCookies("JSESSIONID")
                         .permitAll()
                 )
-                .sessionManagement(session -> session
+                .sessionManagement(sm -> sm
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .maximumSessions(1)
                 );
@@ -135,16 +115,4 @@ public class DonoConfig {
         return http.build();
     }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:8080"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
 }

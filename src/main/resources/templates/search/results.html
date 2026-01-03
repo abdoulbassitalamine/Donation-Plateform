@@ -122,37 +122,42 @@
         </a>
     </div>
 
-    <!-- Pagination -->
+    <!-- Pagination CORRIGÉE avec POST via formulaires -->
     <div th:if="${announcements.totalPages > 1}"
          class="flex justify-center items-center space-x-4">
-        <a th:if="${currentPage > 0}"
-           th:href="@{/search/results(searchText=${searchRequest.searchText},
-                                     geographicArea=${searchRequest.geographicArea},
-                                     itemCondition=${searchRequest.itemCondition},
-                                     status=${searchRequest.status},
-                                     handDelivery=${searchRequest.handDelivery},
-                                     canShip=${searchRequest.canShip},
-                                     page=${currentPage - 1})}"
-           class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition">
-            ← Précédent
-        </a>
+
+        <!-- Bouton Précédent -->
+        <form th:if="${currentPage > 0}" th:action="@{/search}" method="POST" class="inline">
+            <input type="hidden" name="searchText" th:value="${searchRequest.searchText}"/>
+            <input type="hidden" name="geographicArea" th:value="${searchRequest.geographicArea}"/>
+            <input type="hidden" name="itemCondition" th:value="${searchRequest.itemCondition}"/>
+            <input type="hidden" name="status" th:value="${searchRequest.status}"/>
+            <input type="hidden" name="handDelivery" th:value="${searchRequest.handDelivery}"/>
+            <input type="hidden" name="canShip" th:value="${searchRequest.canShip}"/>
+            <input type="hidden" name="page" th:value="${currentPage - 1}"/>
+            <button type="submit" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition">
+                ← Précédent
+            </button>
+        </form>
 
         <span class="text-gray-700 font-medium">
             Page <span th:text="${currentPage + 1}">1</span>
             sur <span th:text="${announcements.totalPages}">1</span>
         </span>
 
-        <a th:if="${currentPage < announcements.totalPages - 1}"
-           th:href="@{/search/results(searchText=${searchRequest.searchText},
-                                     geographicArea=${searchRequest.geographicArea},
-                                     itemCondition=${searchRequest.itemCondition},
-                                     status=${searchRequest.status},
-                                     handDelivery=${searchRequest.handDelivery},
-                                     canShip=${searchRequest.canShip},
-                                     page=${currentPage + 1})}"
-           class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition">
-            Suivant →
-        </a>
+        <!-- Bouton Suivant -->
+        <form th:if="${currentPage < announcements.totalPages - 1}" th:action="@{/search}" method="POST" class="inline">
+            <input type="hidden" name="searchText" th:value="${searchRequest.searchText}"/>
+            <input type="hidden" name="geographicArea" th:value="${searchRequest.geographicArea}"/>
+            <input type="hidden" name="itemCondition" th:value="${searchRequest.itemCondition}"/>
+            <input type="hidden" name="status" th:value="${searchRequest.status}"/>
+            <input type="hidden" name="handDelivery" th:value="${searchRequest.handDelivery}"/>
+            <input type="hidden" name="canShip" th:value="${searchRequest.canShip}"/>
+            <input type="hidden" name="page" th:value="${currentPage + 1}"/>
+            <button type="submit" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition">
+                Suivant →
+            </button>
+        </form>
     </div>
 </div>
 </body>

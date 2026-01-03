@@ -1,7 +1,7 @@
 package fr.isima.glia.donoplatform.service.savedsearch;
 
-import fr.isima.glia.donoplatform.controller.SearchController;
-import fr.isima.glia.donoplatform.controller.UserController;
+import fr.isima.glia.donoplatform.controller.api.SearchApiController;
+import fr.isima.glia.donoplatform.controller.api.UserApiController;
 import fr.isima.glia.donoplatform.dto.SavedSearchDto;
 import fr.isima.glia.donoplatform.exceptions.ResourceNotFoundException;
 import fr.isima.glia.donoplatform.exceptions.UnauthorizedAccessException;
@@ -72,28 +72,28 @@ public class SavedSearchService implements ISavedSearchService {
         // ============================================================
         try {
             // Self link
-            dto.add(linkTo(methodOn(SearchController.class)
-                    .getSavedSearchByIdJson(savedSearch.getId()))
+            dto.add(linkTo(methodOn(SearchApiController.class)
+                    .getSavedSearchById(savedSearch.getId()))
                     .withSelfRel());
 
             // User link
-            dto.add(linkTo(methodOn(UserController.class)
-                    .getUserByIdJson(savedSearch.getUser().getId(), null))
+            dto.add(linkTo(methodOn(UserApiController.class)
+                    .getUserById(savedSearch.getUser().getId(), null))
                     .withRel("user"));
 
             // Execute search link (on pointe vers la recherche POST JSON)
-            dto.add(linkTo(methodOn(SearchController.class)
-                    .searchAnnouncementsJson(null, null, 0, 10))
+            dto.add(linkTo(methodOn(SearchApiController.class)
+                    .searchAnnouncements(null, null, 0, 10))
                     .withRel("execute"));
 
             // Update link
-            dto.add(linkTo(methodOn(SearchController.class)
-                    .updateSavedSearchJson(savedSearch.getId(), null, null))
+            dto.add(linkTo(methodOn(SearchApiController.class)
+                    .updateSavedSearch(savedSearch.getId(), null, null))
                     .withRel("update"));
 
             // Delete link
-            dto.add(linkTo(methodOn(SearchController.class)
-                    .deleteSavedSearchJson(savedSearch.getId(), null))
+            dto.add(linkTo(methodOn(SearchApiController.class)
+                    .deleteSavedSearch(savedSearch.getId(), null))
                     .withRel("delete"));
 
         } catch (Exception e) {

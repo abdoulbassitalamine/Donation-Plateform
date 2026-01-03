@@ -18,8 +18,11 @@
             <p class="text-gray-600 mt-2">Mettez à jour vos informations personnelles</p>
         </div>
 
-        <!-- Formulaire -->
-        <form th:action="@{/users/edit}" method="POST" class="bg-white rounded-lg shadow-md p-8 space-y-6">
+        <!-- Formulaire CORRIGÉ avec PUT method -->
+        <form th:action="@{/users/{id}(id=${user.id})}" method="POST" class="bg-white rounded-lg shadow-md p-8 space-y-6">
+
+            <!-- Hidden field pour simuler PUT -->
+            <input type="hidden" name="_method" value="PUT"/>
 
             <!-- Message d'erreur -->
             <div th:if="${error}"

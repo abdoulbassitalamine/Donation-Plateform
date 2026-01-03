@@ -1,9 +1,9 @@
 package fr.isima.glia.donoplatform.service.user;
 
-import fr.isima.glia.donoplatform.controller.AnnouncementController;
-import fr.isima.glia.donoplatform.controller.BatchController;
-import fr.isima.glia.donoplatform.controller.FavoriteController;
-import fr.isima.glia.donoplatform.controller.UserController;
+import fr.isima.glia.donoplatform.controller.api.AnnouncementApiController;
+import fr.isima.glia.donoplatform.controller.api.BatchApiController;
+import fr.isima.glia.donoplatform.controller.api.FavoriteApiController;
+import fr.isima.glia.donoplatform.controller.api.UserApiController;
 import fr.isima.glia.donoplatform.dto.UserDto;
 import fr.isima.glia.donoplatform.exceptions.AlreadyExistsException;
 import fr.isima.glia.donoplatform.exceptions.UserNotFoundException;
@@ -72,33 +72,33 @@ public class UserService implements IUserService {
         // ============================================================
         try {
             // Self link
-            dto.add(linkTo(methodOn(UserController.class)
-                    .getUserByIdJson(user.getId(), null))
+            dto.add(linkTo(methodOn(UserApiController.class)
+                    .getUserById(user.getId(), null))
                     .withSelfRel());
 
             // Announcements link
-            dto.add(linkTo(methodOn(AnnouncementController.class)
-                    .getUserAnnouncementsJson(user.getId()))
+            dto.add(linkTo(methodOn(AnnouncementApiController.class)
+                    .getUserAnnouncements(user.getId()))
                     .withRel("announcements"));
 
             // Favorites link
-            dto.add(linkTo(methodOn(FavoriteController.class)
-                    .getUserFavoritesJson(user.getId(), null))
+            dto.add(linkTo(methodOn(FavoriteApiController.class)
+                    .getUserFavorites(user.getId(), null))
                     .withRel("favorites"));
 
             // Batches link
-            dto.add(linkTo(methodOn(BatchController.class)
-                    .getBatchesByUserJson(user.getId(), null))
+            dto.add(linkTo(methodOn(BatchApiController.class)
+                    .getBatchesByUser(user.getId(), null))
                     .withRel("batches"));
 
             // Update link
-            dto.add(linkTo(methodOn(UserController.class)
-                    .updateUserJson(user.getId(), null, null))
+            dto.add(linkTo(methodOn(UserApiController.class)
+                    .updateUser(user.getId(), null, null))
                     .withRel("update"));
 
             // Delete link
-            dto.add(linkTo(methodOn(UserController.class)
-                    .deleteUserJson(user.getId(), null))
+            dto.add(linkTo(methodOn(UserApiController.class)
+                    .deleteUser(user.getId(), null))
                     .withRel("delete"));
 
         } catch (Exception e) {

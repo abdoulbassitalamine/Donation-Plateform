@@ -36,11 +36,12 @@
                     </div>
                 </div>
 
-                <!-- Actions -->
+                <!-- Actions avec DELETE method -->
                 <div th:if="${batch.ownerId == userId}">
-                    <form th:action="@{/batches/{id}/delete(id=${batch.id})}"
+                    <form th:action="@{/batches/{id}(id=${batch.id})}"
                           method="POST"
                           onsubmit="return confirm('Voulez-vous vraiment supprimer ce lot ?\nLes annonces ne seront pas supprimées.');">
+                        <input type="hidden" name="_method" value="DELETE"/>
                         <button type="submit"
                                 class="bg-red-500/80 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-semibold transition">
                             🗑️ Supprimer le lot
@@ -51,7 +52,7 @@
         </div>
     </div>
 
-    <!-- Statistiques du lot (CORRIGÉES POUR SPEL) -->
+    <!-- Statistiques du lot -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div class="bg-white rounded-lg shadow-md p-6">
             <div class="flex items-center justify-between">

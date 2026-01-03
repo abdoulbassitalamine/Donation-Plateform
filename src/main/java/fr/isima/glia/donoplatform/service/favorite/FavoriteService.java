@@ -1,5 +1,7 @@
 package fr.isima.glia.donoplatform.service.favorite;
 
+import fr.isima.glia.donoplatform.controller.api.AnnouncementApiController;
+import fr.isima.glia.donoplatform.controller.api.FavoriteApiController;
 import fr.isima.glia.donoplatform.dto.FavoriteDto;
 import fr.isima.glia.donoplatform.exceptions.AlreadyExistsException;
 import fr.isima.glia.donoplatform.model.Announcement;
@@ -16,8 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
-import fr.isima.glia.donoplatform.controller.FavoriteController;
-import fr.isima.glia.donoplatform.controller.AnnouncementController;
 
 @Service
 @RequiredArgsConstructor
@@ -70,18 +70,18 @@ public class FavoriteService implements IFavoriteService {
         // ============================================================
         try {
             // Self link
-            dto.add(linkTo(methodOn(FavoriteController.class)
-                    .getUserFavoritesJson(favorite.getUser().getId(), null))
+            dto.add(linkTo(methodOn(FavoriteApiController.class)
+                    .getUserFavorites(favorite.getUser().getId(), null))
                     .withSelfRel());
 
             // Announcement link
-            dto.add(linkTo(methodOn(AnnouncementController.class)
-                    .getByIdJson(favorite.getAnnouncement().getId(), null))
+            dto.add(linkTo(methodOn(AnnouncementApiController.class)
+                    .getAnnouncementById(favorite.getAnnouncement().getId(), null))
                     .withRel("announcement"));
 
             // Delete link
-            dto.add(linkTo(methodOn(FavoriteController.class)
-                    .removeFavoriteJson(favorite.getAnnouncement().getId(), null))
+            dto.add(linkTo(methodOn(FavoriteApiController.class)
+                    .removeFavorite(favorite.getAnnouncement().getId(), null))
                     .withRel("delete"));
 
         } catch (Exception e) {

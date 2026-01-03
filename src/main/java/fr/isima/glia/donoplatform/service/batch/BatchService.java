@@ -1,8 +1,8 @@
 package fr.isima.glia.donoplatform.service.batch;
 
-import fr.isima.glia.donoplatform.controller.AnnouncementController;
-import fr.isima.glia.donoplatform.controller.BatchController;
-import fr.isima.glia.donoplatform.controller.UserController;
+import fr.isima.glia.donoplatform.controller.api.AnnouncementApiController;
+import fr.isima.glia.donoplatform.controller.api.BatchApiController;
+import fr.isima.glia.donoplatform.controller.api.UserApiController;
 import fr.isima.glia.donoplatform.dto.BatchDto;
 import fr.isima.glia.donoplatform.exceptions.ResourceNotFoundException;
 import fr.isima.glia.donoplatform.exceptions.UnauthorizedAccessException;
@@ -18,7 +18,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -70,23 +69,23 @@ public class BatchService implements IBatchService {
         // ============================================================
         try {
             // Self link
-            dto.add(linkTo(methodOn(BatchController.class)
-                    .getBatchByIdJson(batch.getId(), null))
+            dto.add(linkTo(methodOn(BatchApiController.class)
+                    .getBatchById(batch.getId(), null))
                     .withSelfRel());
 
             // Owner link
-            dto.add(linkTo(methodOn(UserController.class)
-                    .getUserByIdJson(batch.getOwner().getId(), null))
+            dto.add(linkTo(methodOn(UserApiController.class)
+                    .getUserById(batch.getOwner().getId(), null))
                     .withRel("owner"));
 
             // Announcements link
-            dto.add(linkTo(methodOn(AnnouncementController.class)
-                    .getUserAnnouncementsJson(batch.getOwner().getId()))
+            dto.add(linkTo(methodOn(AnnouncementApiController.class)
+                    .getUserAnnouncements(batch.getOwner().getId()))
                     .withRel("announcements"));
 
             // Delete link
-            dto.add(linkTo(methodOn(BatchController.class)
-                    .deleteBatchJson(batch.getId(), null))
+            dto.add(linkTo(methodOn(BatchApiController.class)
+                    .deleteBatch(batch.getId(), null))
                     .withRel("delete"));
 
         } catch (Exception e) {

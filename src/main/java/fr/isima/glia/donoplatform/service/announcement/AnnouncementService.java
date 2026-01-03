@@ -1,8 +1,9 @@
 package fr.isima.glia.donoplatform.service.announcement;
 
-import fr.isima.glia.donoplatform.controller.AnnouncementController;
-import fr.isima.glia.donoplatform.controller.ImageController;
-import fr.isima.glia.donoplatform.controller.UserController;
+
+import fr.isima.glia.donoplatform.controller.api.AnnouncementApiController;
+import fr.isima.glia.donoplatform.controller.api.ImageApiController;
+import fr.isima.glia.donoplatform.controller.api.UserApiController;
 import fr.isima.glia.donoplatform.dto.AnnouncementDto;
 import fr.isima.glia.donoplatform.enums.AnnouncementStatus;
 import fr.isima.glia.donoplatform.exceptions.AnnouncementNotFoundException;
@@ -87,30 +88,30 @@ public class AnnouncementService implements IAnnouncementService {
         // ============================================================
         try {
             // Self link
-            dto.add(linkTo(methodOn(AnnouncementController.class)
-                    .getByIdJson(announcement.getId(), null))
+            dto.add(linkTo(methodOn(AnnouncementApiController.class)
+                    .getAnnouncementById(announcement.getId(), null))
                     .withSelfRel());
 
             // Owner link
-            dto.add(linkTo(methodOn(UserController.class)
-                    .getUserByIdJson(announcement.getOwner().getId(), null))
+            dto.add(linkTo(methodOn(UserApiController.class)
+                    .getUserById(announcement.getOwner().getId(), null))
                     .withRel("owner"));
 
             // Images link (si images présentes)
             if (!announcement.getImages().isEmpty()) {
-                dto.add(linkTo(methodOn(ImageController.class)
-                        .getImagesByAnnouncementJson(announcement.getId(), null))
+                dto.add(linkTo(methodOn(ImageApiController.class)
+                        .getImageById(announcement.getId(), null))
                         .withRel("images"));
             }
 
             // Update link (si propriétaire)
-            dto.add(linkTo(methodOn(AnnouncementController.class)
-                    .updateJson(announcement.getId(), null, null))
+            dto.add(linkTo(methodOn(AnnouncementApiController.class)
+                    .updateAnnouncement(announcement.getId(), null, null))
                     .withRel("update"));
 
             // Delete link (si propriétaire)
-            dto.add(linkTo(methodOn(AnnouncementController.class)
-                    .deleteJson(announcement.getId(), null))
+            dto.add(linkTo(methodOn(AnnouncementApiController.class)
+                    .deleteAnnouncement(announcement.getId(), null))
                     .withRel("delete"));
 
         } catch (Exception e) {

@@ -1,7 +1,7 @@
 package fr.isima.glia.donoplatform.service.image;
 
-import fr.isima.glia.donoplatform.controller.AnnouncementController;
-import fr.isima.glia.donoplatform.controller.ImageController;
+import fr.isima.glia.donoplatform.controller.api.AnnouncementApiController;
+import fr.isima.glia.donoplatform.controller.api.ImageApiController;
 import fr.isima.glia.donoplatform.dto.ImageDto;
 import fr.isima.glia.donoplatform.exceptions.ResourceNotFoundException;
 import fr.isima.glia.donoplatform.model.Announcement;
@@ -60,23 +60,23 @@ public class ImageService implements IImageService {
         // ============================================================
         try {
             // Self link
-            dto.add(linkTo(methodOn(ImageController.class)
-                    .getImageByIdJson(image.getId(), null))
+            dto.add(linkTo(methodOn(ImageApiController.class)
+                    .getImageById(image.getId(), null))
                     .withSelfRel());
 
             // Download link (public)
-            dto.add(linkTo(methodOn(ImageController.class)
-                    .downloadImage(image.getId(), null))
+            dto.add(linkTo(methodOn(ImageApiController.class)
+                    .getImageById(image.getId(), null))
                     .withRel("download"));
 
             // Announcement link
-            dto.add(linkTo(methodOn(AnnouncementController.class)
-                    .getByIdJson(image.getAnnouncement().getId(), null))
+            dto.add(linkTo(methodOn(AnnouncementApiController.class)
+                    .getAnnouncementById(image.getAnnouncement().getId(), null))
                     .withRel("announcement"));
 
             // Delete link
-            dto.add(linkTo(methodOn(ImageController.class)
-                    .deleteImageJson(image.getId(), null))
+            dto.add(linkTo(methodOn(ImageApiController.class)
+                    .deleteImage(image.getId(), null))
                     .withRel("delete"));
 
         } catch (Exception e) {

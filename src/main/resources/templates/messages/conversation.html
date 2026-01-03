@@ -94,13 +94,9 @@
             </div>
         </div>
 
-        <!-- Formulaire d'envoi -->
+        <!-- Formulaire d'envoi  -->
         <div class="border-t border-gray-200 p-4">
-            <form th:action="@{/messages/submit}" method="POST" class="flex space-x-4">
-
-                <!-- TOKEN CSRF -->
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-
+            <form th:action="@{/messages}" method="POST" class="flex space-x-4">
                 <!-- Champs cachés -->
                 <input type="hidden" name="announcementId" th:value="${announcementId}">
                 <input type="hidden" name="receiverId" th:value="${receiverId}">

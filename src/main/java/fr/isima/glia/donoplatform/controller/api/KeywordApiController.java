@@ -1,4 +1,4 @@
-package fr.isima.glia.donoplatform.controller;
+package fr.isima.glia.donoplatform.controller.api;
 
 import fr.isima.glia.donoplatform.dto.KeywordDto;
 import fr.isima.glia.donoplatform.model.Keyword;
@@ -8,27 +8,25 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-@Controller
+/**
+ * JSON API for keyword operations
+ */
+@RestController
 @RequestMapping("/keywords")
 @RequiredArgsConstructor
-public class KeywordController {
+public class KeywordApiController {
 
     private final IKeywordService keywordService;
 
-    // ========================================
-    // GET ALL KEYWORDS - Version JSON
-    // ========================================
+    // Get all keywords
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    public ResponseEntity<ApiResponse> getAllKeywordsJson() {
+    public ResponseEntity<ApiResponse> getAllKeywords() {
         List<KeywordDto> keywords = keywordService.getAllKeywords().stream()
                 .map(keywordService::convertToDto)
                 .collect(Collectors.toList());
@@ -38,37 +36,14 @@ public class KeywordController {
                 .body(new ApiResponse("Keywords retrieved", keywords));
     }
 
-    // ========================================
-    // GET ALL KEYWORDS - Version HTML
-    // ========================================
-    @GetMapping(produces = MediaType.TEXT_HTML_VALUE)
-    public String getAllKeywordsHtml(Model model) {
-        List<Keyword> keywords = keywordService.getAllKeywords();
-        model.addAttribute("keywords", keywords);
-        return "keywords/list";
-    }
-
-    // ========================================
-    // GET KEYWORD BY ID - Version JSON
-    // ========================================
+    // Get keyword by ID
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    public ResponseEntity<ApiResponse> getKeywordByIdJson(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse> getKeywordById(@PathVariable Long id) {
         Keyword keyword = keywordService.getKeywordById(id);
         KeywordDto dto = keywordService.convertToDto(keyword);
 
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.maxAge(1, TimeUnit.HOURS).cachePublic())
                 .body(new ApiResponse("Keyword found", dto));
-    }
-
-    // ========================================
-    // GET KEYWORD BY ID - Version HTML
-    // ========================================
-    @GetMapping(value = "/{id}", produces = MediaType.TEXT_HTML_VALUE)
-    public String getKeywordByIdHtml(@PathVariable Long id, Model model) {
-        Keyword keyword = keywordService.getKeywordById(id);
-        model.addAttribute("keyword", keyword);
-        return "keywords/detail";
     }
 }

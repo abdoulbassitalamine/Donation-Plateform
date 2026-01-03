@@ -1,8 +1,8 @@
 package fr.isima.glia.donoplatform.service.message;
 
-import fr.isima.glia.donoplatform.controller.AnnouncementController;
-import fr.isima.glia.donoplatform.controller.MessageController;
-import fr.isima.glia.donoplatform.controller.UserController;
+import fr.isima.glia.donoplatform.controller.api.AnnouncementApiController;
+import fr.isima.glia.donoplatform.controller.api.MessageApiController;
+import fr.isima.glia.donoplatform.controller.api.UserApiController;
 import fr.isima.glia.donoplatform.dto.MessageDto;
 import fr.isima.glia.donoplatform.exceptions.ResourceNotFoundException;
 import fr.isima.glia.donoplatform.exceptions.UnauthorizedAccessException;
@@ -63,34 +63,34 @@ public class MessageService implements IMessageService {
         // ============================================================
         try {
             // Self link
-            dto.add(linkTo(methodOn(MessageController.class)
-                    .getMessageByIdJson(message.getId(), null, null))
+            dto.add(linkTo(methodOn(MessageApiController.class)
+                    .getMessageById(message.getId(), null, null))
                     .withSelfRel());
 
             // Sender link
-            dto.add(linkTo(methodOn(UserController.class)
-                    .getUserByIdJson(message.getSender().getId(), null))
+            dto.add(linkTo(methodOn(UserApiController.class)
+                    .getUserById(message.getSender().getId(), null))
                     .withRel("sender"));
 
             // Receiver link
-            dto.add(linkTo(methodOn(UserController.class)
-                    .getUserByIdJson(message.getReceiver().getId(), null))
+            dto.add(linkTo(methodOn(UserApiController.class)
+                    .getUserById(message.getReceiver().getId(), null))
                     .withRel("receiver"));
 
             // Announcement link
-            dto.add(linkTo(methodOn(AnnouncementController.class)
-                    .getByIdJson(message.getAnnouncement().getId(), null))
+            dto.add(linkTo(methodOn(AnnouncementApiController.class)
+                    .getAnnouncementById(message.getAnnouncement().getId(), null))
                     .withRel("announcement"));
 
             // Conversation link
-            dto.add(linkTo(methodOn(MessageController.class)
-                    .getConversationJson(message.getAnnouncement().getId(), null, null))
+            dto.add(linkTo(methodOn(MessageApiController.class)
+                    .getConversation(message.getAnnouncement().getId(), null, null, null))
                     .withRel("conversation"));
 
             // Mark as read link
             if (!message.getRead()) {
-                dto.add(linkTo(methodOn(MessageController.class)
-                        .markAsReadJson(message.getId(), null))
+                dto.add(linkTo(methodOn(MessageApiController.class)
+                        .markAsRead(message.getId(), null))
                         .withRel("markAsRead"));
             }
 

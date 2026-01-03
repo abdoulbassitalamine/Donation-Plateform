@@ -32,8 +32,9 @@
                 </div>
             </div>
 
+            <!-- LIEN MODIFIER CORRIGÉ -->
             <div th:if="${isOwnProfile}" class="flex space-x-3">
-                <a th:href="@{/users/edit}"
+                <a th:href="@{/users/{id}/edit(id=${user.id})}"
                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition">
                     ✏️ Modifier le profil
                 </a>
@@ -110,8 +111,10 @@
                         <div class="p-4">
                             <h3 class="font-semibold text-gray-900 mb-2" th:text="${announcement.title}">Titre</h3>
                             <div class="flex space-x-2">
-                                <a th:href="@{/announcements/{id}(id=${announcement.id})}" class="flex-1 text-center bg-blue-600 text-white text-sm px-3 py-2 rounded">Voir</a>
-                                <a th:href="@{/announcements/{id}/edit(id=${announcement.id})}" class="flex-1 text-center bg-gray-600 text-white text-sm px-3 py-2 rounded">Modifier</a>
+                                <a th:href="@{/announcements/{id}(id=${announcement.id})}"
+                                   class="flex-1 text-center bg-blue-600 text-white text-sm px-3 py-2 rounded">
+                                    Voir
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -124,10 +127,24 @@
             <!-- Onglet: Mes favoris -->
             <div id="content-favorites" class="tab-content hidden">
                 <div th:if="${!favorites.isEmpty()}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div th:each="favorite : ${favorites}" class="bg-gray-50 rounded-lg overflow-hidden">
+                    <div th:each="favorite : ${favorites}" class="bg-gray-50 rounded-lg overflow-hidden hover:shadow-md transition">
                         <div class="p-4">
-                            <h3 class="font-semibold" th:text="${favorite.announcement.title}">Titre</h3>
-                            <button onclick="removeFavorite(this)" th:attr="data-announcement-id=${favorite.announcement.id}" class="text-red-600 text-sm">Retirer</button>
+                            <h3 class="font-semibold mb-2" th:text="${favorite.announcement.title}">Titre</h3>
+                            <div class="flex space-x-2">
+                                <a th:href="@{/announcements/{id}(id=${favorite.announcement.id})}"
+                                   class="flex-1 text-center bg-blue-600 text-white text-sm px-3 py-2 rounded">
+                                    Voir
+                                </a>
+                                <!-- Formulaire DELETE pour retirer des favoris -->
+                                <form th:action="@{/favorites}" method="POST" class="flex-1">
+                                    <input type="hidden" name="_method" value="DELETE"/>
+                                    <input type="hidden" name="announcementId" th:value="${favorite.announcement.id}"/>
+                                    <button type="submit"
+                                            class="w-full bg-red-600 text-white text-sm px-3 py-2 rounded hover:bg-red-700">
+                                        Retirer
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -154,49 +171,24 @@
 <th:block layout:fragment="scripts">
     <script>
         function showTab(tabName) {
-            // 1. Cacher tous les contenus
+            // Cacher tous les contenus
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.add('hidden');
             });
 
-            // 2. Réinitialiser le style de tous les boutons
+            // Réinitialiser le style de tous les boutons
             document.querySelectorAll('.tab-button').forEach(btn => {
                 btn.classList.remove('border-blue-600', 'text-blue-600');
                 btn.classList.add('border-transparent', 'text-gray-500');
             });
 
-            // 3. Afficher le contenu sélectionné
+            // Afficher le contenu sélectionné
             document.getElementById('content-' + tabName).classList.remove('hidden');
 
-            // 4. Activer le bouton sélectionné
+            // Activer le bouton sélectionné
             const activeBtn = document.getElementById('tab-' + tabName);
             activeBtn.classList.add('border-blue-600', 'text-blue-600');
             activeBtn.classList.remove('border-transparent', 'text-gray-500');
-        }
-
-        // Fonctions pour les actions (Stubs à implémenter selon votre API)
-        function removeFavorite(btn) {
-            const id = btn.getAttribute('data-announcement-id');
-            if(confirm('Retirer des favoris ?')) {
-                console.log('Suppression favori:', id);
-                // Appel API Fetch ici...
-            }
-        }
-
-        function toggleNotifications(checkbox) {
-            const id = checkbox.getAttribute('data-search-id');
-            console.log('Toggle notifications pour recherche:', id, checkbox.checked);
-        }
-
-        function deleteSavedSearch(btn) {
-            const id = btn.getAttribute('data-search-id');
-            if(confirm('Supprimer cette recherche ?')) {
-                console.log('Suppression recherche:', id);
-            }
-        }
-
-        function executeSearch(btn) {
-            console.log('Exécution de la recherche...');
         }
     </script>
 </th:block>
