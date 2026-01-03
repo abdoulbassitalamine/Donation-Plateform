@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       layout:decorate="~{layout}">
 <head>
     <title>Résultats de recherche - DonoPlatform</title>
@@ -16,6 +16,24 @@
                     <span th:text="${announcements.totalElements}">0</span> annonce(s) trouvée(s)
                 </p>
             </div>
+            <a th:href="@{/search}"
+               class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition">
+                🔍 Nouvelle recherche
+            </a>
+        </div>
+
+        <div class="flex space-x-3" sec:authorize="isAuthenticated()">
+            <!-- NOUVEAU BOUTON SAUVEGARDER -->
+            <form th:action="@{/search/save}" method="GET">
+                <input type="hidden" name="searchText" th:value="${searchRequest.searchText}"/>
+                <input type="hidden" name="geographicArea" th:value="${searchRequest.geographicArea}"/>
+                <input type="hidden" name="itemCondition" th:value="${searchRequest.itemCondition?.name()}"/>
+                <button type="submit"
+                        class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition">
+                    💾 Sauvegarder
+                </button>
+            </form>
+
             <a th:href="@{/search}"
                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition">
                 🔍 Nouvelle recherche

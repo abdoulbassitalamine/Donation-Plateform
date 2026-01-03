@@ -6,87 +6,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE">DonoPlatform</title>
-
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#3B82F6',
-                        secondary: '#10B981',
-                    }
-                }
-            }
+            theme: { extend: { colors: { primary: '#3B82F6', secondary: '#10B981' } } }
         }
     </script>
 </head>
-<body class="bg-gray-50">
-<!-- Header -->
-<header class="bg-white shadow-md">
-    <div class="container mx-auto px-4 py-4">
-        <div class="flex justify-between items-center">
-            <a th:href="@{/}" class="text-2xl font-bold text-blue-600">
-                🎁 DonoPlatform
-            </a>
-            <nav class="hidden md:flex space-x-6">
-                <a th:href="@{/}" class="text-gray-700 hover:text-blue-600 transition">Accueil</a>
-                <a th:href="@{/announcements}" class="text-gray-700 hover:text-blue-600 transition">Annonces</a>
-                <a th:href="@{/search}" class="text-gray-700 hover:text-blue-600 transition">Rechercher</a>
-            </nav>
+<body class="bg-gray-50 flex flex-col min-h-screen">
 
-            <!-- Menu invité -->
-            <div sec:authorize="!isAuthenticated()" class="flex items-center space-x-4">
-                <a th:href="@{/auth/login}" class="text-gray-700 hover:text-blue-600 transition">
-                    Connexion
-                </a>
-                <a th:href="@{/auth/register}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
-                    Inscription
-                </a>
-            </div>
+<header th:replace="~{fragments/header :: header}"></header>
 
-            <!-- Menu utilisateur connecté -->
-            <div sec:authorize="isAuthenticated()" class="flex items-center space-x-4">
-                <a th:href="@{/announcements/create}" class="text-gray-700 hover:text-blue-600 transition">
-                    📢 Publier
-                </a>
-                <a th:href="@{/favorites/{id}(id=${#authentication.principal.id})}"
-                   class="text-gray-700 hover:text-blue-600 transition">
-                    ❤️ Favoris
-                </a>
-                <a th:href="@{/messages}" class="text-gray-700 hover:text-blue-600 transition relative">
-                    💬 Messages
-                </a>
-                <a th:href="@{/batches}" class="text-gray-700 hover:text-blue-600 transition">
-                    📦 Lots
-                </a>
-                <a th:href="@{/users/{id}(id=${#authentication.principal.id})}"
-                   class="text-gray-700 hover:text-blue-600 transition">
-                    👤 Profil
-                </a>
-                <form th:action="@{/auth/logout}" method="POST" class="inline">
-                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition">
-                        Déconnexion
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</header>
-
-<main class="container mx-auto px-4 py-8">
+<main class="container mx-auto px-4 py-8 flex-grow">
     <div layout:fragment="content"></div>
 </main>
 
-<footer class="bg-gray-800 text-white mt-16">
-    <div class="container mx-auto px-4 py-8">
-        <div class="text-center">
-            <p>&copy; 2024 DonoPlatform. Tous droits réservés.</p>
-        </div>
-    </div>
-</footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 
-<!-- Scripts personnalisés par page -->
 <th:block layout:fragment="scripts"></th:block>
+
 </body>
 </html>
