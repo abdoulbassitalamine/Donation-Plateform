@@ -64,28 +64,21 @@ public class FavoriteService implements IFavoriteService {
     @Override
     public FavoriteDto convertToDto(Favorite favorite) {
         FavoriteDto dto = modelMapper.map(favorite, FavoriteDto.class);
-
-        // ============================================================
-        // HATEOAS - Ajout des liens hypermedia
-        // ============================================================
         try {
-            // Self link
             dto.add(linkTo(methodOn(FavoriteApiController.class)
                     .getUserFavorites(favorite.getUser().getId(), null))
                     .withSelfRel());
 
-            // Announcement link
             dto.add(linkTo(methodOn(AnnouncementApiController.class)
                     .getAnnouncementById(favorite.getAnnouncement().getId(), null))
                     .withRel("announcement"));
 
-            // Delete link
             dto.add(linkTo(methodOn(FavoriteApiController.class)
                     .removeFavorite(favorite.getAnnouncement().getId(), null))
                     .withRel("delete"));
 
         } catch (Exception e) {
-            // Si erreur de génération de lien, on continue sans bloquer
+            System.out.println(e.getMessage());
         }
 
         return dto;

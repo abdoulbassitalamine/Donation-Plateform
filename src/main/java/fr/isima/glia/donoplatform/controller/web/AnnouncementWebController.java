@@ -65,19 +65,18 @@ public class AnnouncementWebController {
         return "announcements/list";
     }
 
-    // View announcement detail
     @GetMapping(value = "/{id}", produces = MediaType.TEXT_HTML_VALUE)
     public String viewAnnouncement(
-            @PathVariable Long id,
+            @PathVariable("id") Long announcementId,
             @AuthenticationPrincipal DonoUserDetails userDetails,
             Model model) {
 
-        Announcement announcement = announcementService.getAnnouncementById(id);
+        Announcement announcement = announcementService.getAnnouncementById(announcementId);
         AnnouncementDto dto = announcementService.convertToDto(announcement);
 
         boolean isFavorite = false;
         if (userDetails != null) {
-            isFavorite = favoriteService.isFavorite(userDetails.getId(), id);
+            isFavorite = favoriteService.isFavorite(announcementId, userDetails.getId());
         }
 
         model.addAttribute("announcement", dto);
