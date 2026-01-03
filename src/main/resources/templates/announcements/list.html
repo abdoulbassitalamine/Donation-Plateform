@@ -4,24 +4,24 @@
       layout:decorate="~{layout}">
 <head>
     <title>Annonces - DonoPlatform</title>
+    <link rel="stylesheet" th:href="@{/css/announcements.css}">
     <script th:src="@{/js/pages/announcement-list.js}" defer></script>
 </head>
 <body>
 <div layout:fragment="content">
     <!-- Header de la page -->
-    <div class="flex justify-between items-center mb-8">
-        <h1 class="text-4xl font-bold text-gray-800">Toutes les annonces</h1>
-        <a th:href="@{/announcements/create}"
-           class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+    <div class="page-header">
+        <h1 class="page-title">Toutes les annonces</h1>
+        <a th:href="@{/announcements/create}" class="btn-create">
             ➕ Publier une annonce
         </a>
     </div>
 
     <!-- Barre de filtres -->
-    <div class="bg-white rounded-lg shadow-md p-4 mb-8 flex flex-wrap gap-4 items-center">
-        <div class="flex-1">
-            <label for="sortBy" class="block text-sm font-medium text-gray-700 mb-1">Trier par</label>
-            <select id="sortBy" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+    <div class="filters-bar">
+        <div class="filter-group">
+            <label for="sortBy" class="filter-label">Trier par</label>
+            <select id="sortBy" class="filter-select">
                 <option value="publicationDate" th:selected="${sortBy == 'publicationDate'}">
                     Date de publication
                 </option>
@@ -31,9 +31,9 @@
             </select>
         </div>
 
-        <div class="flex-1">
-            <label for="sortOrder" class="block text-sm font-medium text-gray-700 mb-1">Ordre</label>
-            <select id="sortOrder" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+        <div class="filter-group">
+            <label for="sortOrder" class="filter-label">Ordre</label>
+            <select id="sortOrder" class="filter-select">
                 <option value="desc" th:selected="${sortOrder == 'desc'}">
                     Plus récent
                 </option>
@@ -43,59 +43,53 @@
             </select>
         </div>
 
-        <div class="flex items-end">
-            <a th:href="@{/search}"
-               class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-semibold transition">
+        <div class="filter-actions">
+            <a th:href="@{/search}" class="btn-search">
                 🔍 Recherche avancée
             </a>
         </div>
     </div>
 
     <!-- Grille des annonces -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <div th:each="announcement : ${announcements.content}"
-             class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition">
+    <div class="announcements-list">
+        <div th:each="announcement : ${announcements.content}" class="announcement-card-full">
 
             <!-- Image -->
-            <div class="h-48 bg-gray-200 overflow-hidden">
+            <div class="announcement-image-full">
                 <img th:if="${!announcement.images.isEmpty()}"
                      th:src="@{/images/{id}/download(id=${announcement.images.iterator().next().id})}"
-                     th:alt="${announcement.title}"
-                     class="w-full h-full object-cover">
-                <div th:unless="${!announcement.images.isEmpty()}"
-                     class="w-full h-full flex items-center justify-center text-gray-400">
-                    📦 Pas d'image
+                     th:alt="${announcement.title}">
+                <div th:unless="${!announcement.images.isEmpty()}" class="announcement-image-placeholder-full">
+                    📦
                 </div>
             </div>
 
             <!-- Contenu -->
-            <div class="p-4">
-                <h3 class="text-xl font-semibold text-gray-800 mb-2" th:text="${announcement.title}">
+            <div class="announcement-body">
+                <h3 class="announcement-title-full" th:text="${announcement.title}">
                     Titre de l'annonce
                 </h3>
 
-                <p class="text-gray-600 text-sm mb-4"
-                   th:text="${#strings.abbreviate(announcement.description, 100)}">
+                <p class="announcement-desc" th:text="${#strings.abbreviate(announcement.description, 100)}">
                     Description de l'annonce...
                 </p>
 
                 <!-- Badges -->
-                <div class="flex flex-wrap gap-2 mb-4">
-                    <span th:classappend="${announcement.status.name() == 'AVAILABLE' ? 'bg-green-100 text-green-800' :
-                                          announcement.status.name() == 'RESERVED' ? 'bg-yellow-100 text-yellow-800' :
-                                          'bg-gray-100 text-gray-800'}"
-                          class="text-xs px-2 py-1 rounded font-semibold"
+                <div class="announcement-tags">
+                    <span th:classappend="${announcement.status.name() == 'AVAILABLE' ? 'tag-available' :
+                                          announcement.status.name() == 'RESERVED' ? 'tag-reserved' :
+                                          'tag-given'}"
+                          class="tag"
                           th:text="${announcement.status.label}">
                         Disponible
                     </span>
-                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-semibold"
-                          th:text="${announcement.itemCondition.label}">
+                    <span class="tag tag-condition" th:text="${announcement.itemCondition.label}">
                         État
                     </span>
                 </div>
 
                 <!-- Footer -->
-                <div class="flex justify-between items-center text-sm text-gray-500 mb-4">
+                <div class="announcement-footer">
                     <span>📍 <span th:text="${announcement.geographicArea}">Zone</span></span>
                     <span th:text="${#temporals.format(announcement.publicationDate, 'dd/MM/yyyy')}">
                         Date
@@ -103,8 +97,7 @@
                 </div>
 
                 <!-- Bouton -->
-                <a th:href="@{/announcements/{id}(id=${announcement.id})}"
-                   class="block text-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition">
+                <a th:href="@{/announcements/{id}(id=${announcement.id})}" class="btn-view">
                     Voir détails
                 </a>
             </div>
@@ -112,22 +105,21 @@
     </div>
 
     <!-- Pagination -->
-    <div th:if="${announcements.totalPages > 1}"
-         class="flex justify-center items-center space-x-4">
+    <div th:if="${announcements.totalPages > 1}" class="pagination">
         <a th:if="${currentPage > 0}"
            th:href="@{/announcements(page=${currentPage - 1}, size=12, sortBy=${sortBy}, sortOrder=${sortOrder})}"
-           class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition">
+           class="pagination-btn">
             ← Précédent
         </a>
 
-        <span class="text-gray-700 font-medium">
+        <span class="pagination-info">
             Page <span th:text="${currentPage + 1}">1</span>
             sur <span th:text="${announcements.totalPages}">1</span>
         </span>
 
         <a th:if="${currentPage < announcements.totalPages - 1}"
            th:href="@{/announcements(page=${currentPage + 1}, size=12, sortBy=${sortBy}, sortOrder=${sortOrder})}"
-           class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition">
+           class="pagination-btn">
             Suivant →
         </a>
     </div>

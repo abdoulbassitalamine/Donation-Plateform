@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-<footer th:fragment="footer" class="mt-auto bg-[#0a0a0a] py-12">
-    <div class="container mx-auto px-6">
-        <div class="flex flex-col items-center justify-center space-y-4">
+<footer th:fragment="footer">
+    <div class="container">
+        <div class="footer-content">
 
-            <div class="flex items-center space-x-2 text-white/90">
-                <span class="text-xl">🎁</span>
-                <span class="text-sm font-semibold tracking-widest uppercase">DonoPlatform</span>
+            <div class="footer-brand">
+                <span class="footer-emoji">🎁</span>
+                <span class="footer-text">DonoPlatform</span>
             </div>
 
-            <div class="w-8 h-px bg-white/10"></div>
+            <div class="footer-divider"></div>
 
-            <div class="flex flex-col items-center space-y-1">
-                <p class="text-gray-500 text-xs font-light tracking-wide">
+            <div class="footer-info">
+                <p class="footer-tagline">
                     Redonner pour un futur solidaire
                 </p>
-                <p class="text-gray-600 text-[10px] uppercase tracking-tighter">
+                <p class="footer-copyright">
                     &copy; 2024 Tous droits réservés
                 </p>
             </div>

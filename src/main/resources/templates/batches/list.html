@@ -4,49 +4,47 @@
       layout:decorate="~{layout}">
 <head>
     <title>Mes lots - DonoPlatform</title>
+    <link rel="stylesheet" th:href="@{/css/collections.css}">
 </head>
 <body>
 <div layout:fragment="content">
     <!-- En-tête -->
-    <div class="flex justify-between items-center mb-8">
-        <div>
-            <h1 class="text-4xl font-bold text-gray-900">📦 Mes lots</h1>
-            <p class="text-gray-600 mt-2">Regroupez vos annonces en lots pour faciliter les dons groupés</p>
-            <p class="text-sm text-gray-500 mt-1">
+    <div class="batches-header">
+        <div class="batches-header-info">
+            <h1>📦 Mes lots</h1>
+            <p>Regroupez vos annonces en lots pour faciliter les dons groupés</p>
+            <p class="count">
                 <span th:text="${batches.size()}">0</span> lot(s) créé(s)
             </p>
         </div>
 
-        <button onclick="showCreateModal()"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+        <button onclick="showCreateModal()" class="btn-create-batch">
             ➕ Créer un lot
         </button>
     </div>
 
     <!-- Liste des batches -->
-    <div th:if="${!batches.isEmpty()}" class="space-y-6">
-        <div th:each="batch : ${batches}" class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition">
+    <div th:if="${!batches.isEmpty()}" class="batches-list">
+        <div th:each="batch : ${batches}" class="batch-card">
             <!-- En-tête du batch -->
-            <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
-                <div class="flex justify-between items-start">
-                    <div class="flex-1">
-                        <h3 class="text-2xl font-bold mb-2">Lot #<span th:text="${batch.id}">1</span></h3>
-                        <p class="text-blue-100 text-sm mb-3">
+            <div class="batch-header">
+                <div class="batch-header-content">
+                    <div class="batch-info">
+                        <h3 class="batch-title">Lot #<span th:text="${batch.id}">1</span></h3>
+                        <p class="batch-date">
                             Créé le <span th:text="${#temporals.format(batch.createdAt, 'dd MMMM yyyy à HH:mm')}">date</span>
                         </p>
                     </div>
-                    <div class="flex space-x-2">
-                        <a th:href="@{/batches/{id}(id=${batch.id})}"
-                           class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg font-semibold transition">
+                    <div class="batch-actions">
+                        <a th:href="@{/batches/{id}(id=${batch.id})}" class="btn-view-batch">
                             👁️ Voir
                         </a>
-                        <!-- Formulaire DELETE avec _method -->
                         <form th:action="@{/batches/{id}(id=${batch.id})}"
                               method="POST"
-                              onsubmit="return confirm('Supprimer ce lot ?');">
+                              onsubmit="return confirm('Supprimer ce lot ?');"
+                              style="display: inline;">
                             <input type="hidden" name="_method" value="DELETE"/>
-                            <button type="submit"
-                                    class="bg-red-500/80 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition">
+                            <button type="submit" class="btn-delete-batch">
                                 🗑️
                             </button>
                         </form>
@@ -55,16 +53,16 @@
             </div>
 
             <!-- Grille des annonces -->
-            <div class="p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="batch-body">
+                <div class="batch-announcements-grid">
                     <div th:each="announcement : ${batch.announcements}"
-                         class="border border-gray-200 rounded-lg p-4 hover:border-blue-500 transition cursor-pointer"
+                         class="batch-announcement-item"
                          th:onclick="|window.location.href='/announcements/${announcement.id}'|">
-                        <h4 class="font-semibold text-gray-900 mb-1 line-clamp-1" th:text="${announcement.title}">Titre</h4>
-                        <span th:classappend="${announcement.status.name() == 'AVAILABLE' ? 'bg-green-100 text-green-800' :
-                                              announcement.status.name() == 'RESERVED' ? 'bg-yellow-100 text-yellow-800' :
-                                              'bg-gray-100 text-gray-800'}"
-                              class="text-xs px-2 py-1 rounded-full font-semibold inline-block"
+                        <h4 class="batch-announcement-title" th:text="${announcement.title}">Titre</h4>
+                        <span th:classappend="${announcement.status.name() == 'AVAILABLE' ? 'tag-available' :
+                                              announcement.status.name() == 'RESERVED' ? 'tag-reserved' :
+                                              'tag-given'}"
+                              class="tag"
                               th:text="${announcement.status.label}">
                             Statut
                         </span>
@@ -75,57 +73,53 @@
     </div>
 
     <!-- Message si vide -->
-    <div th:if="${batches.isEmpty()}" class="bg-white rounded-lg shadow-md p-16 text-center">
-        <div class="text-8xl mb-6">📦</div>
-        <h2 class="text-3xl font-bold text-gray-900 mb-4">Aucun lot créé</h2>
-        <button onclick="showCreateModal()"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold transition text-lg">
+    <div th:if="${batches.isEmpty()}" class="batches-empty-state">
+        <div class="batches-empty-icon">📦</div>
+        <h2 class="batches-empty-title">Aucun lot créé</h2>
+        <button onclick="showCreateModal()" class="batches-empty-btn">
             ➕ Créer mon premier lot
         </button>
     </div>
 
     <!-- Modal de création de lot -->
-    <div id="createBatchModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
-            <div class="bg-blue-600 text-white p-6">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-2xl font-bold">➕ Créer un nouveau lot</h2>
-                    <button onclick="closeCreateModal()" class="text-white hover:text-gray-200 text-3xl">&times;</button>
+    <div id="createBatchModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-header-content">
+                    <h2 class="modal-title">➕ Créer un nouveau lot</h2>
+                    <button onclick="closeCreateModal()" class="modal-close">&times;</button>
                 </div>
             </div>
 
             <form th:action="@{/batches}" method="POST">
-                <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
-                    <div class="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <p class="text-blue-800 font-semibold">
+                <div class="modal-body">
+                    <div class="modal-info">
+                        <p>
                             <span id="selectedCount">0</span> annonce(s) sélectionnée(s)
                         </p>
                     </div>
 
-                    <div id="announcementsList" class="space-y-3">
+                    <div id="announcementsList" class="modal-list">
                         <div th:each="announcement : ${userAnnouncements}"
-                             class="border border-gray-200 rounded-lg p-4 hover:border-blue-500 transition cursor-pointer"
+                             class="modal-list-item"
                              onclick="toggleCheckbox(this)">
-                            <div class="flex items-center space-x-4">
+                            <div class="modal-list-item-content">
                                 <input type="checkbox" name="announcementIds" th:value="${announcement.id}"
-                                       class="w-5 h-5 text-blue-600 rounded"
                                        onchange="updateSelectedCount()" onclick="event.stopPropagation()">
-                                <div class="flex-1">
-                                    <h4 class="font-semibold" th:text="${announcement.title}">Titre</h4>
-                                    <p class="text-sm text-gray-500" th:text="${announcement.status.label}">Statut</p>
+                                <div class="modal-list-item-info">
+                                    <h4 class="modal-list-item-title" th:text="${announcement.title}">Titre</h4>
+                                    <p class="modal-list-item-status" th:text="${announcement.status.label}">Statut</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="border-t border-gray-200 p-6 bg-gray-50 flex justify-between items-center">
-                    <button type="button" onclick="closeCreateModal()"
-                            class="px-6 py-3 border rounded-lg hover:bg-gray-100 font-semibold">
+                <div class="modal-footer">
+                    <button type="button" onclick="closeCreateModal()" class="btn-modal-cancel">
                         Annuler
                     </button>
-                    <button type="submit" id="submitBatchBtn" disabled
-                            class="disabled:opacity-50 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition">
+                    <button type="submit" id="submitBatchBtn" disabled class="btn-modal-submit">
                         ✅ Créer le lot
                     </button>
                 </div>
@@ -139,15 +133,13 @@
     <script>
         function showCreateModal() {
             const modal = document.getElementById('createBatchModal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
+            modal.classList.add('active');
             updateSelectedCount();
         }
 
         function closeCreateModal() {
             const modal = document.getElementById('createBatchModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
+            modal.classList.remove('active');
             document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
             updateSelectedCount();
         }
@@ -168,22 +160,11 @@
 
             if (count > 0) {
                 submitBtn.disabled = false;
-                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             } else {
                 submitBtn.disabled = true;
-                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
             }
         }
     </script>
 </th:block>
-
-<style>
-    .line-clamp-1 {
-        display: -webkit-box;
-        -webkit-line-clamp: 1;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-</style>
 </body>
 </html>

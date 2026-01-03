@@ -4,25 +4,26 @@
       layout:decorate="~{layout}">
 <head>
     <title>Sauvegarder la recherche - DonoPlatform</title>
+    <link rel="stylesheet" th:href="@{/css/forms.css}">
+    <link rel="stylesheet" th:href="@{/css/search.css}">
 </head>
 <body>
 <div layout:fragment="content">
-    <div class="max-w-2xl mx-auto">
-        <div class="bg-white rounded-lg shadow-xl p-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-8">💾 Sauvegarder cette recherche</h1>
+    <div class="save-search-container">
+        <div class="save-search-card">
+            <h1 class="save-search-title">💾 Sauvegarder cette recherche</h1>
 
-            <form th:action="@{/search/save}" method="POST" class="space-y-6">
+            <form th:action="@{/search/save}" method="POST" class="save-search-form">
 
                 <!-- Nom de la recherche -->
-                <div>
-                    <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                <div class="form-field">
+                    <label for="name">
                         Nom de la recherche *
                     </label>
                     <input type="text"
                            id="name"
                            name="name"
                            required
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                            placeholder="Ex: Meubles Paris">
                 </div>
 
@@ -33,20 +34,20 @@
                        th:value="${savedSearchRequest.keywords != null ? #strings.listJoin(savedSearchRequest.keywords, ','): ''}"/>
 
                 <!-- Affichage des critères -->
-                <div class="bg-gray-50 rounded-lg p-4">
-                    <p class="text-sm font-medium text-gray-700 mb-2">Critères de recherche :</p>
-                    <div class="flex flex-wrap gap-2">
+                <div class="criteria-preview">
+                    <p class="criteria-preview-label">Critères de recherche :</p>
+                    <div class="criteria-preview-tags">
                         <span th:if="${savedSearchRequest.geographicArea != null}"
-                              class="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full">
+                              class="search-criteria-tag criteria-tag-location">
                             📍 <span th:text="${savedSearchRequest.geographicArea}">Zone</span>
                         </span>
                         <span th:if="${savedSearchRequest.itemCondition != null}"
-                              class="bg-purple-100 text-purple-800 text-sm px-3 py-1 rounded-full">
+                              class="search-criteria-tag criteria-tag-condition">
                             ⭐ <span th:text="${savedSearchRequest.itemCondition.label}">État</span>
                         </span>
                         <span th:if="${savedSearchRequest.keywords != null and !savedSearchRequest.keywords.isEmpty()}"
                               th:each="keyword : ${savedSearchRequest.keywords}"
-                              class="bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full">
+                              class="search-criteria-tag criteria-tag-text">
                             🏷️ <span th:text="${keyword}">Mot-clé</span>
                         </span>
                     </div>
@@ -54,25 +55,22 @@
 
                 <!-- Notifications -->
                 <div>
-                    <label class="flex items-center space-x-3 cursor-pointer">
+                    <label class="notification-toggle">
                         <input type="checkbox"
                                name="notificationsEnabled"
-                               checked
-                               class="w-5 h-5 text-blue-600 rounded">
-                        <span class="text-gray-700">
+                               checked>
+                        <span>
                             🔔 Recevoir des notifications pour les nouvelles annonces
                         </span>
                     </label>
                 </div>
 
                 <!-- Boutons -->
-                <div class="flex space-x-4 pt-4">
-                    <button type="submit"
-                            class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition">
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit">
                         ✅ Sauvegarder
                     </button>
-                    <a th:href="@{/search}"
-                       class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 rounded-lg text-center transition">
+                    <a th:href="@{/search}" class="btn-cancel">
                         Annuler
                     </a>
                 </div>

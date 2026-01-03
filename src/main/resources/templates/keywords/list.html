@@ -4,23 +4,24 @@
       layout:decorate="~{layout}">
 <head>
     <title>Mots-clés - DonoPlatform</title>
+    <link rel="stylesheet" th:href="@{/css/search.css}">
 </head>
 <body>
 <div layout:fragment="content">
-    <h1 class="text-3xl font-bold text-gray-900 mb-8">📌 Tous les mots-clés</h1>
+    <h1 class="keywords-title">📌 Tous les mots-clés</h1>
 
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <div class="flex flex-wrap gap-3">
+    <div class="keywords-container">
+        <div class="keywords-list">
             <a th:each="keyword : ${keywords}"
                th:href="@{/search/results(searchText=${keyword.name})}"
-               class="bg-blue-100 text-blue-800 px-4 py-2 rounded-full hover:bg-blue-200 transition">
+               class="keyword-tag">
                 <span th:text="${keyword.name}">mot-clé</span>
             </a>
         </div>
 
-        <div th:if="${keywords.isEmpty()}" class="text-center py-12 text-gray-500">
-            <div class="text-6xl mb-4">📌</div>
-            <p class="text-lg">Aucun mot-clé disponible</p>
+        <div th:if="${keywords.isEmpty()}" class="keywords-empty">
+            <div class="keywords-empty-icon">📌</div>
+            <p class="keywords-empty-text">Aucun mot-clé disponible</p>
         </div>
     </div>
 </div>

@@ -5,85 +5,83 @@
       layout:decorate="~{layout}">
 <head>
     <title th:text="${announcement.title} + ' - DonoPlatform'">Annonce - DonoPlatform</title>
+    <link rel="stylesheet" th:href="@{/css/announcements.css}">
 </head>
 <body>
 <div layout:fragment="content">
     <!-- Breadcrumb -->
-    <nav class="text-sm mb-6">
-        <ol class="flex space-x-2 text-gray-600">
-            <li><a th:href="@{/}" class="hover:text-blue-600">Accueil</a></li>
+    <nav class="breadcrumb">
+        <ol>
+            <li><a th:href="@{/}">Accueil</a></li>
             <li>›</li>
-            <li><a th:href="@{/announcements}" class="hover:text-blue-600">Annonces</a></li>
+            <li><a th:href="@{/announcements}">Annonces</a></li>
             <li>›</li>
-            <li class="text-gray-900 font-medium" th:text="${announcement.title}">Titre</li>
+            <li class="active" th:text="${announcement.title}">Titre</li>
         </ol>
     </nav>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="detail-layout">
         <!-- Colonne principale -->
-        <div class="lg:col-span-2">
+        <div class="detail-main">
             <!-- Images -->
-            <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
-                <div th:if="${!announcement.images.isEmpty()}" class="relative">
+            <div class="detail-images">
+                <div th:if="${!announcement.images.isEmpty()}">
                     <img th:src="@{/images/{id}/download(id=${announcement.images.iterator().next().id})}"
                          th:alt="${announcement.title}"
-                         class="w-full h-96 object-cover">
+                         class="main-image">
 
-                    <div th:if="${announcement.images.size() > 1}" class="flex space-x-2 p-4 overflow-x-auto">
+                    <div th:if="${announcement.images.size() > 1}" class="image-thumbnails">
                         <img th:each="image : ${announcement.images}"
                              th:src="@{/images/{id}/download(id=${image.id})}"
-                             class="w-20 h-20 object-cover rounded cursor-pointer hover:opacity-75 transition">
+                             class="thumbnail">
                     </div>
                 </div>
-                <div th:unless="${!announcement.images.isEmpty()}"
-                     class="h-96 bg-gray-200 flex items-center justify-center">
-                    <span class="text-gray-400 text-2xl">📦 Pas d'image disponible</span>
+                <div th:unless="${!announcement.images.isEmpty()}" class="image-placeholder">
+                    <span>📦 Pas d'image disponible</span>
                 </div>
             </div>
 
             <!-- Informations détaillées -->
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <div class="flex justify-between items-start mb-4">
-                    <h1 class="text-3xl font-bold text-gray-900" th:text="${announcement.title}">Titre</h1>
-                    <div class="flex flex-col space-y-2">
-                        <span th:classappend="${announcement.status.name() == 'AVAILABLE' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}"
-                              class="text-sm px-3 py-1 rounded-full font-semibold"
+            <div class="detail-info">
+                <div class="detail-header">
+                    <h1 class="detail-title" th:text="${announcement.title}">Titre</h1>
+                    <div class="detail-status">
+                        <span th:classappend="${announcement.status.name() == 'AVAILABLE' ? 'tag-available' : 'tag-reserved'}"
+                              class="status-badge-large"
                               th:text="${announcement.status.label}">Statut</span>
                     </div>
                 </div>
-                <div class="mb-6">
-                    <h2 class="text-xl font-semibold text-gray-900 mb-3">Description</h2>
-                    <p class="text-gray-700 whitespace-pre-line" th:text="${announcement.description}">Description...</p>
+                <div class="detail-section">
+                    <h2 class="section-title-detail">Description</h2>
+                    <p class="detail-description" th:text="${announcement.description}">Description...</p>
                 </div>
             </div>
         </div>
 
         <!-- Sidebar -->
-        <div class="lg:col-span-1">
-            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Donneur</h3>
-                <div class="flex items-center space-x-3 mb-6">
-                    <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-inner">
+        <div class="detail-sidebar">
+            <div class="sidebar-card">
+                <h3 class="sidebar-title">Donneur</h3>
+                <div class="owner-info">
+                    <div class="owner-avatar">
                         <span th:text="${announcement.ownerUsername.substring(0,1).toUpperCase()}">U</span>
                     </div>
-                    <div>
-                        <p class="font-semibold text-gray-900" th:text="${announcement.ownerUsername}">Username</p>
-                        <p class="text-xs text-gray-500">Membre certifié</p>
+                    <div class="owner-details">
+                        <p class="owner-name" th:text="${announcement.ownerUsername}">Username</p>
+                        <p class="owner-badge">Membre certifié</p>
                     </div>
                 </div>
 
                 <!-- Boutons d'action -->
-                <div sec:authorize="isAuthenticated()" class="space-y-3">
-                    <a th:href="@{/messages/conversation(announcementId=${announcement.id})}"
-                       class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition text-center shadow-md">
+                <div sec:authorize="isAuthenticated()" class="action-buttons">
+                    <a th:href="@{/messages/conversation(announcementId=${announcement.id})}" class="btn-contact">
                         💬 Contacter
                     </a>
 
                     <!-- BOUTON AJOUTER AUX FAVORIS -->
                     <form th:if="${!isFavorite}" th:action="@{/favorites}" method="POST">
                         <input type="hidden" name="announcementId" th:value="${announcement.id}"/>
-                        <button type="submit"
-                                class="w-full bg-gray-100 text-gray-800 border border-transparent font-semibold py-3 rounded-lg transition flex items-center justify-center space-x-2 hover:bg-gray-200">
+                        <button type="submit" class="btn-favorite">
                             <span>🤍</span>
                             <span>Ajouter aux favoris</span>
                         </button>
@@ -93,8 +91,7 @@
                     <form th:if="${isFavorite}" th:action="@{/favorites}" method="POST">
                         <input type="hidden" name="_method" value="DELETE"/>
                         <input type="hidden" name="announcementId" th:value="${announcement.id}"/>
-                        <button type="submit"
-                                class="w-full bg-red-50 text-red-600 border border-red-200 font-semibold py-3 rounded-lg transition flex items-center justify-center space-x-2 hover:bg-red-100">
+                        <button type="submit" class="btn-favorite btn-favorite-active">
                             <span>❤️</span>
                             <span>Retirer des favoris</span>
                         </button>
@@ -102,10 +99,9 @@
                 </div>
 
                 <!-- Message si NON connecté -->
-                <div sec:authorize="!isAuthenticated()" class="text-center mt-4 p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                    <p class="text-sm text-gray-600 mb-3">Connectez-vous pour contacter le donneur</p>
-                    <a th:href="@{/auth/login}"
-                       class="block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition">
+                <div sec:authorize="!isAuthenticated()" class="login-prompt">
+                    <p class="login-prompt-text">Connectez-vous pour contacter le donneur</p>
+                    <a th:href="@{/auth/login}" class="btn-login">
                         Se connecter
                     </a>
                 </div>

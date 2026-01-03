@@ -4,21 +4,21 @@
       layout:decorate="~{layout}">
 <head>
     <title>Mes favoris - DonoPlatform</title>
+    <link rel="stylesheet" th:href="@{/css/collections.css}">
 </head>
 <body>
 <div layout:fragment="content">
     <!-- En-tête -->
-    <div class="flex justify-between items-center mb-8">
-        <div>
-            <h1 class="text-4xl font-bold text-gray-900">❤️ Mes favoris</h1>
-            <p class="text-gray-600 mt-2">
+    <div class="favorites-header">
+        <div class="favorites-header-info">
+            <h1>❤️ Mes favoris</h1>
+            <p>
                 <span th:text="${favorites.size()}">0</span> annonce(s) dans vos favoris
             </p>
         </div>
 
-        <div class="flex space-x-4">
-            <a th:href="@{/announcements}"
-               class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+        <div class="favorites-actions">
+            <a th:href="@{/announcements}" class="btn-create">
                 📢 Parcourir les annonces
             </a>
 
@@ -26,9 +26,9 @@
             <form th:if="${!favorites.isEmpty()}"
                   th:action="@{/favorites/clear}"
                   method="POST"
-                  onsubmit="return confirm('Voulez-vous vraiment supprimer tous vos favoris ?');">
-                <button type="submit"
-                        class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+                  onsubmit="return confirm('Voulez-vous vraiment supprimer tous vos favoris ?');"
+                  style="display: inline;">
+                <button type="submit" class="btn-clear-favorites">
                     🗑️ Tout supprimer
                 </button>
             </form>
@@ -36,29 +36,24 @@
     </div>
 
     <!-- Grille des favoris -->
-    <div th:if="${!favorites.isEmpty()}"
-         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <div th:if="${!favorites.isEmpty()}" class="favorites-grid">
 
-        <div th:each="favorite : ${favorites}"
-             class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition">
+        <div th:each="favorite : ${favorites}" class="favorite-card">
 
             <!-- Image -->
-            <div class="h-48 bg-gray-200 overflow-hidden relative">
+            <div class="favorite-image">
                 <img th:if="${!favorite.announcement.images.isEmpty()}"
                      th:src="@{/api/v1/images/{id}/download(id=${favorite.announcement.images.iterator().next().id})}"
-                     th:alt="${favorite.announcement.title}"
-                     class="w-full h-full object-cover">
-                <div th:unless="${!favorite.announcement.images.isEmpty()}"
-                     class="w-full h-full flex items-center justify-center text-gray-400 text-5xl">
+                     th:alt="${favorite.announcement.title}">
+                <div th:unless="${!favorite.announcement.images.isEmpty()}" class="favorite-image-placeholder">
                     📦
                 </div>
 
                 <!-- Badge favori avec formulaire -->
-                <div class="absolute top-3 right-3">
+                <div class="favorite-badge">
                     <form th:action="@{/favorites/toggle}" method="POST">
                         <input type="hidden" name="announcementId" th:value="${favorite.announcement.id}">
-                        <button type="submit"
-                                class="bg-white/90 hover:bg-red-500 text-red-500 hover:text-white p-2 rounded-full shadow-lg transition">
+                        <button type="submit" class="btn-toggle-favorite">
                             ❤️
                         </button>
                     </form>
@@ -66,71 +61,67 @@
             </div>
 
             <!-- Contenu -->
-            <div class="p-5">
+            <div class="favorite-content">
                 <!-- Titre -->
-                <h3 class="text-xl font-semibold text-gray-900 mb-2 line-clamp-2"
-                    th:text="${favorite.announcement.title}">
+                <h3 class="favorite-title" th:text="${favorite.announcement.title}">
                     Titre de l'annonce
                 </h3>
 
                 <!-- Description -->
-                <p class="text-gray-600 text-sm mb-4 line-clamp-2"
-                   th:text="${favorite.announcement.description}">
+                <p class="favorite-description" th:text="${favorite.announcement.description}">
                     Description de l'annonce...
                 </p>
 
                 <!-- Informations du donneur -->
-                <div class="flex items-center space-x-2 mb-4 text-sm text-gray-600">
-                    <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                <div class="favorite-owner">
+                    <div class="favorite-owner-avatar">
                         <span th:text="${favorite.announcement.ownerUsername.substring(0,1).toUpperCase()}">U</span>
                     </div>
-                    <span>Par <span class="font-medium" th:text="${favorite.announcement.ownerUsername}">user</span></span>
+                    <span>Par <span class="favorite-owner-name" th:text="${favorite.announcement.ownerUsername}">user</span></span>
                 </div>
 
                 <!-- Badges -->
-                <div class="flex flex-wrap gap-2 mb-4">
-                    <span th:classappend="${favorite.announcement.status.name() == 'AVAILABLE' ? 'bg-green-100 text-green-800' :
-                                          favorite.announcement.status.name() == 'RESERVED' ? 'bg-yellow-100 text-yellow-800' :
-                                          'bg-gray-100 text-gray-800'}"
-                          class="text-xs px-3 py-1 rounded-full font-semibold"
+                <div class="favorite-tags">
+                    <span th:classappend="${favorite.announcement.status.name() == 'AVAILABLE' ? 'tag-available' :
+                                          favorite.announcement.status.name() == 'RESERVED' ? 'tag-reserved' :
+                                          'tag-given'}"
+                          class="favorite-tag"
                           th:text="${favorite.announcement.status.label}">
                         Disponible
                     </span>
-                    <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-semibold"
-                          th:text="${favorite.announcement.itemCondition.label}">
+                    <span class="favorite-tag tag-condition" th:text="${favorite.announcement.itemCondition.label}">
                         État
                     </span>
                     <span th:if="${favorite.announcement.handDelivery}"
-                          class="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full font-semibold">
+                          class="favorite-tag"
+                          style="background: #E9D5FF; color: #6B21A8;">
                         🤝 Main propre
                     </span>
                     <span th:if="${favorite.announcement.canShip}"
-                          class="bg-indigo-100 text-indigo-800 text-xs px-3 py-1 rounded-full font-semibold">
+                          class="favorite-tag"
+                          style="background: #E0E7FF; color: #3730A3;">
                         📦 Envoi
                     </span>
                 </div>
 
                 <!-- Footer -->
-                <div class="flex justify-between items-center text-sm text-gray-500 mb-4 pb-4 border-b border-gray-200">
+                <div class="favorite-footer">
                     <span>📍 <span th:text="${favorite.announcement.geographicArea}">Zone</span></span>
-                    <span title="Ajouté aux favoris le"
-                          th:text="${#temporals.format(favorite.createdAt, 'dd/MM/yyyy')}">
+                    <span th:text="${#temporals.format(favorite.createdAt, 'dd/MM/yyyy')}">
                         Date
                     </span>
                 </div>
 
                 <!-- Actions -->
-                <div class="flex space-x-2">
-                    <a th:href="@{/announcements/{id}(id=${favorite.announcement.id})}"
-                       class="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition">
+                <div class="favorite-actions-buttons">
+                    <a th:href="@{/announcements/{id}(id=${favorite.announcement.id})}" class="btn-view-favorite">
                         👁️ Voir détails
                     </a>
 
                     <!-- Formulaire pour retirer des favoris -->
-                    <form th:action="@{/favorites/toggle}" method="POST" class="flex-1">
+                    <form th:action="@{/favorites/toggle}" method="POST" style="flex: 1;">
                         <input type="hidden" name="announcementId" th:value="${favorite.announcement.id}">
-                        <button type="submit"
-                                class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        <button type="submit" class="btn-remove-favorite" style="width: 100%;">
                             🗑️ Retirer
                         </button>
                     </form>
@@ -140,26 +131,16 @@
     </div>
 
     <!-- Message si vide -->
-    <div th:if="${favorites.isEmpty()}" class="bg-white rounded-lg shadow-md p-16 text-center">
-        <div class="text-8xl mb-6">❤️</div>
-        <h2 class="text-3xl font-bold text-gray-900 mb-4">Aucun favori pour le moment</h2>
-        <p class="text-gray-600 mb-8 text-lg">
+    <div th:if="${favorites.isEmpty()}" class="empty-state">
+        <div class="empty-state-icon">❤️</div>
+        <h2 class="empty-state-title">Aucun favori pour le moment</h2>
+        <p class="empty-state-text">
             Parcourez les annonces et ajoutez celles qui vous intéressent à vos favoris
         </p>
-        <a th:href="@{/announcements}"
-           class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold transition text-lg">
+        <a th:href="@{/announcements}" class="empty-state-btn">
             📢 Découvrir les annonces
         </a>
     </div>
 </div>
-
-<style>
-    .line-clamp-2 {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-</style>
 </body>
 </html>

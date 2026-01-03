@@ -5,33 +5,32 @@
       layout:decorate="~{layout}">
 <head>
     <title>Conversation - DonoPlatform</title>
+    <link rel="stylesheet" th:href="@{/css/messages.css}">
 </head>
 <body>
 <div layout:fragment="content">
     <!-- En-tête de la conversation -->
-    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-4">
-                <a th:href="@{/messages}"
-                   class="text-gray-600 hover:text-gray-900 transition">
+    <div class="conversation-header">
+        <div class="conversation-header-content">
+            <div class="conversation-nav">
+                <a th:href="@{/messages}" class="btn-back">
                     ← Retour
                 </a>
 
                 <!-- Info de la conversation -->
-                <div class="flex items-center space-x-3" th:if="${!conversation.isEmpty()}">
-                    <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                <div class="conversation-info" th:if="${!conversation.isEmpty()}">
+                    <div class="conversation-avatar">
                         <span th:with="otherUser=${conversation[0].senderId == userId ? conversation[0].receiverUsername : conversation[0].senderUsername}"
                               th:text="${otherUser.substring(0,1).toUpperCase()}">U</span>
                     </div>
-                    <div>
-                        <h2 class="text-xl font-bold text-gray-900">
+                    <div class="conversation-details">
+                        <h2 class="conversation-contact-name">
                             <span th:with="otherUser=${conversation[0].senderId == userId ? conversation[0].receiverUsername : conversation[0].senderUsername}"
                                   th:text="${otherUser}">Contact</span>
                         </h2>
-                        <p class="text-sm text-gray-600">
+                        <p class="conversation-about">
                             À propos de:
                             <a th:href="@{/announcements/{id}(id=${announcementId})}"
-                               class="text-blue-600 hover:underline font-medium"
                                th:text="${!conversation.isEmpty() ? conversation[0].announcementTitle : 'Annonce'}">
                                 Annonce
                             </a>
@@ -43,70 +42,74 @@
             <!-- Lien vers l'annonce -->
             <a th:if="${!conversation.isEmpty()}"
                th:href="@{/announcements/{id}(id=${announcementId})}"
-               class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition">
+               class="btn-view-announcement">
                 📢 Voir l'annonce
             </a>
         </div>
     </div>
 
     <!-- Zone de conversation -->
-    <div class="bg-white rounded-lg shadow-md">
+    <div class="conversation-container">
         <!-- Messages -->
-        <div id="messagesContainer" class="h-96 overflow-y-auto p-6 space-y-4">
-            <div th:if="${conversation.isEmpty()}" class="text-center text-gray-500 py-8">
+        <div id="messagesContainer" class="messages-container">
+            <div th:if="${conversation.isEmpty()}" class="message-empty">
                 Aucun message dans cette conversation
             </div>
 
-            <div th:each="message : ${conversation}"
-                 th:classappend="${message.senderId == userId ? 'flex justify-end' : 'flex justify-start'}">
-
+            <div th:each="message : ${conversation}">
                 <!-- Message reçu (gauche) -->
                 <div th:if="${message.senderId != userId}"
-                     class="max-w-xs lg:max-w-md">
-                    <div class="bg-gray-100 rounded-lg p-4">
-                        <p class="text-gray-900" th:text="${message.content}">
-                            Contenu du message
-                        </p>
-                        <p class="text-xs text-gray-500 mt-2"
-                           th:text="${#temporals.format(message.sentAt, 'dd/MM/yyyy à HH:mm')}">
-                            Date
-                        </p>
+                     class="message-wrapper message-wrapper-received">
+                    <div class="message-bubble">
+                        <div class="message-content message-content-received">
+                            <p class="message-text" th:text="${message.content}">
+                                Contenu du message
+                            </p>
+                            <p class="message-meta">
+                                <span class="message-time message-time-received"
+                                      th:text="${#temporals.format(message.sentAt, 'dd/MM/yyyy à HH:mm')}">
+                                    Date
+                                </span>
+                            </p>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Message envoyé (droite) -->
                 <div th:if="${message.senderId == userId}"
-                     class="max-w-xs lg:max-w-md">
-                    <div class="bg-blue-600 text-white rounded-lg p-4">
-                        <p th:text="${message.content}">
-                            Contenu du message
-                        </p>
-                        <div class="flex items-center justify-between mt-2">
-                            <p class="text-xs text-blue-100"
-                               th:text="${#temporals.format(message.sentAt, 'dd/MM/yyyy à HH:mm')}">
-                                Date
+                     class="message-wrapper message-wrapper-sent">
+                    <div class="message-bubble">
+                        <div class="message-content message-content-sent">
+                            <p class="message-text" th:text="${message.content}">
+                                Contenu du message
                             </p>
-                            <span th:if="${message.read}" class="text-xs text-blue-100">✓✓</span>
-                            <span th:unless="${message.read}" class="text-xs text-blue-100">✓</span>
+                            <div class="message-meta">
+                                <p class="message-time message-time-sent"
+                                   th:text="${#temporals.format(message.sentAt, 'dd/MM/yyyy à HH:mm')}">
+                                    Date
+                                </p>
+                                <span class="message-read-status message-read-status-sent">
+                                    <span th:if="${message.read}">✓✓</span>
+                                    <span th:unless="${message.read}">✓</span>
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Formulaire d'envoi  -->
-        <div class="border-t border-gray-200 p-4">
-            <form th:action="@{/messages}" method="POST" class="flex space-x-4">
+        <!-- Formulaire d'envoi -->
+        <div class="message-form-container">
+            <form th:action="@{/messages}" method="POST" class="message-form">
                 <!-- Champs cachés -->
                 <input type="hidden" name="announcementId" th:value="${announcementId}">
                 <input type="hidden" name="receiverId" th:value="${receiverId}">
 
                 <textarea name="content" rows="2" required
-                          placeholder="Écrivez votre message..."
-                          class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"></textarea>
+                          placeholder="Écrivez votre message..."></textarea>
 
-                <button type="submit"
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition self-end">
+                <button type="submit" class="btn-send">
                     ✉️ Envoyer
                 </button>
             </form>

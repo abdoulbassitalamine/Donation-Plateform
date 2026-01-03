@@ -4,15 +4,16 @@
       layout:decorate="~{layout}">
 <head>
     <title>Publier une annonce - DonoPlatform</title>
+    <link rel="stylesheet" th:href="@{/css/forms.css}">
 </head>
 <body>
 <div layout:fragment="content">
-    <div class="max-w-3xl mx-auto">
-        <div class="bg-white rounded-lg shadow-xl p-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-8">Publier une annonce</h1>
+    <div class="create-announcement-container">
+        <div class="form-card">
+            <h1 class="form-title">Publier une annonce</h1>
 
             <!-- Messages d'erreur -->
-            <div th:if="${error}" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+            <div th:if="${error}" class="alert alert-error">
                 <span th:text="${error}"></span>
             </div>
 
@@ -21,90 +22,85 @@
                   th:object="${announcement}"
                   method="POST"
                   enctype="multipart/form-data"
-                  class="space-y-6">
+                  class="form-groups">
 
                 <!-- Titre -->
-                <div>
-                    <label for="title" class="block text-sm font-medium text-gray-700 mb-2">Titre de l'annonce *</label>
+                <div class="form-field">
+                    <label for="title">Titre de l'annonce *</label>
                     <input type="text" id="title" th:field="*{title}" required maxlength="100"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                            placeholder="Ex: Canapé 3 places en bon état">
                 </div>
 
                 <!-- Description -->
-                <div>
-                    <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                <div class="form-field">
+                    <label for="description">Description *</label>
                     <textarea id="description" th:field="*{description}" required maxlength="1000" rows="5"
-                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                               placeholder="Décrivez votre objet..."></textarea>
                 </div>
 
-                <!-- Section Images (NOUVEAU) -->
-                <div class="bg-gray-50 p-4 rounded-lg border-2 border-dashed border-gray-300">
-                    <label class="block text-sm font-medium text-gray-700 mb-4 text-center font-bold">📷 Photos de l'objet</label>
+                <!-- Section Images -->
+                <div class="image-upload-section">
+                    <label class="image-upload-label">📷 Photos de l'objet</label>
 
-                    <div class="flex flex-col items-center">
-                        <label class="cursor-pointer bg-white px-6 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
+                    <div class="image-upload-button-wrapper">
+                        <label class="image-upload-button">
                             <span>Choisir des fichiers</span>
-                            <input type="file" name="images" id="imagesInput" multiple accept="image/*" class="hidden" onchange="previewImages()">
+                            <input type="file" name="images" id="imagesInput" multiple accept="image/*" onchange="previewImages()">
                         </label>
-                        <p class="text-xs text-gray-500 mt-2">Vous pouvez sélectionner plusieurs images (JPG, PNG)</p>
+                        <p class="image-upload-help">Vous pouvez sélectionner plusieurs images (JPG, PNG)</p>
                     </div>
 
                     <!-- Grille de prévisualisation -->
-                    <div id="imagePreview" class="grid grid-cols-4 gap-4 mt-4">
+                    <div id="imagePreview" class="image-preview-grid">
                         <!-- Les miniatures apparaîtront ici via JS -->
                     </div>
                 </div>
 
                 <!-- État et Zone -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="itemCondition" class="block text-sm font-medium text-gray-700 mb-2">État de l'objet *</label>
-                        <select id="itemCondition" th:field="*{itemCondition}" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                <div class="form-row form-row-2">
+                    <div class="form-field">
+                        <label for="itemCondition">État de l'objet *</label>
+                        <select id="itemCondition" th:field="*{itemCondition}" required>
                             <option value="">Sélectionnez un état</option>
                             <option th:each="condition : ${itemConditions}" th:value="${condition.name()}" th:text="${condition.label}"></option>
                         </select>
                     </div>
 
-                    <div>
-                        <label for="geographicArea" class="block text-sm font-medium text-gray-700 mb-2">Zone géographique *</label>
+                    <div class="form-field">
+                        <label for="geographicArea">Zone géographique *</label>
                         <input type="text" id="geographicArea" th:field="*{geographicArea}" required
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                placeholder="Ex: Paris, Lyon 3e">
                     </div>
                 </div>
 
                 <!-- Options -->
-                <div class="space-y-3">
-                    <label class="block text-sm font-medium text-gray-700">Options de remise *</label>
-                    <div class="flex space-x-6">
-                        <label class="flex items-center space-x-2 cursor-pointer">
-                            <input type="checkbox" th:field="*{handDelivery}" class="rounded text-blue-600">
+                <div class="checkbox-group">
+                    <label>Options de remise *</label>
+                    <div style="display: flex; gap: 1.5rem;">
+                        <label class="checkbox-item">
+                            <input type="checkbox" th:field="*{handDelivery}">
                             <span>Main propre</span>
                         </label>
-                        <label class="flex items-center space-x-2 cursor-pointer">
-                            <input type="checkbox" th:field="*{canShip}" class="rounded text-blue-600">
+                        <label class="checkbox-item">
+                            <input type="checkbox" th:field="*{canShip}">
                             <span>Envoi possible</span>
                         </label>
                     </div>
                 </div>
 
                 <!-- Mots-clés -->
-                <div>
-                    <label for="keywords" class="block text-sm font-medium text-gray-700 mb-2">Mots-clés (séparés par des virgules)</label>
+                <div class="form-field">
+                    <label for="keywords">Mots-clés (séparés par des virgules)</label>
                     <input type="text" id="keywords" name="keywords"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                            placeholder="meuble, salon, bois...">
                 </div>
 
                 <!-- Actions -->
-                <div class="flex space-x-4 pt-4 border-t border-gray-100">
-                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-md transition">
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit">
                         📢 Publier l'annonce
                     </button>
-                    <a th:href="@{/announcements}" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-lg text-center transition">
+                    <a th:href="@{/announcements}" class="btn-cancel">
                         Annuler
                     </a>
                 </div>
@@ -124,8 +120,8 @@
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         const div = document.createElement('div');
-                        div.className = 'relative h-20 bg-gray-100 rounded overflow-hidden shadow-sm';
-                        div.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+                        div.className = 'image-preview-item';
+                        div.innerHTML = `<img src="${e.target.result}">`;
                         preview.appendChild(div);
                     }
                     reader.readAsDataURL(file);

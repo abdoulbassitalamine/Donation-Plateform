@@ -6,18 +6,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE">DonoPlatform</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: { extend: { colors: { primary: '#3B82F6', secondary: '#10B981' } } }
-        }
-    </script>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
-<body class="bg-gray-50 flex flex-col min-h-screen">
+<body>
 
 <header th:replace="~{fragments/header :: header}"></header>
 
-<main class="container mx-auto px-4 py-8 flex-grow">
+<main class="container">
     <div layout:fragment="content"></div>
 </main>
 
