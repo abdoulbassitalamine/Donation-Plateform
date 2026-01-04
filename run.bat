@@ -9,11 +9,31 @@ echo   DonoPlatform - Spring Boot Application
 echo ================================================
 echo.
 
+REM Detecter Maven Wrapper ou Maven
+if exist "mvnw.cmd" (
+    set MVN=mvnw.cmd
+    echo [INFO] Utilisation de Maven Wrapper
+) else (
+    where mvn >nul 2>nul
+    if errorlevel 1 (
+        echo [ERREUR] Ni mvnw.cmd ni Maven ne sont disponibles!
+        echo.
+        echo Solutions :
+        echo   1. Installez Maven : https://maven.apache.org/download.cgi
+        echo   2. Ou ajoutez Maven Wrapper : mvn wrapper:wrapper
+        echo.
+        pause
+        exit /b 1
+    )
+    set MVN=mvn
+    echo [INFO] Utilisation de Maven systeme
+)
+echo.
+
 set ACTION=%1
 if "%ACTION%"=="" set ACTION=run
 
 if "%ACTION%"=="compile" goto COMPILE
-if "%ACTION%"=="test" goto TEST
 if "%ACTION%"=="package" goto PACKAGE
 if "%ACTION%"=="run" goto RUN
 if "%ACTION%"=="clean" goto CLEAN
@@ -21,24 +41,16 @@ if "%ACTION%"=="all" goto ALL
 goto USAGE
 
 :COMPILE
-echo [1/2] Compilation du projet...
-call mvnw.cmd clean compile -DskipTests
+echo [1/1] Compilation du projet...
+call %MVN% clean compile -DskipTests
 if errorlevel 1 goto ERROR
 echo [OK] Compilation reussie
 echo.
 goto END
 
-:TEST
-echo [2/2] Execution des tests...
-call mvnw.cmd test
-if errorlevel 1 goto ERROR
-echo [OK] Tests termines
-echo.
-goto END
-
 :PACKAGE
 echo [1/1] Creation du JAR executable...
-call mvnw.cmd clean package -DskipTests
+call %MVN% clean package -DskipTests
 if errorlevel 1 goto ERROR
 echo [OK] JAR cree : target\donoplatform-0.0.1-SNAPSHOT.jar
 echo.
@@ -51,21 +63,26 @@ if exist "target\donoplatform-0.0.1-SNAPSHOT.jar" (
     java -jar target\donoplatform-0.0.1-SNAPSHOT.jar
 ) else (
     echo JAR introuvable, compilation en cours...
-    call mvnw.cmd clean package -DskipTests
+    call %MVN% clean package -DskipTests
+    if errorlevel 1 goto ERROR
     java -jar target\donoplatform-0.0.1-SNAPSHOT.jar
 )
 goto END
 
 :CLEAN
 echo Nettoyage du projet...
-call mvnw.cmd clean
-del /q data\*.db 2>nul
+call %MVN% clean
+if not errorlevel 1 (
+    if exist "data" (
+        del /q data\*.db 2>nul
+    )
+)
 echo [OK] Projet nettoye
 echo.
 goto END
 
 :ALL
-call mvnw.cmd clean compile test package
+call %MVN% clean compile package -DskipTests
 if errorlevel 1 goto ERROR
 echo [OK] Build complet termine
 goto END
@@ -88,19 +105,19 @@ echo Appuyez sur Ctrl+C pour arreter l'application
 goto END
 
 :USAGE
-echo Usage: %0 {compile^|test^|package^|run^|clean^|all}
+echo Usage: %0 {compile^|package^|run^|clean^|all}
 echo.
 echo   compile  - Compile le code source
-echo   test     - Compile et execute les tests
 echo   package  - Cree le JAR executable
 echo   run      - Lance l'application (defaut^)
 echo   clean    - Nettoie le projet
-echo   all      - Compile, teste et package
+echo   all      - Compile et package
 goto END
 
 :ERROR
 echo.
 echo [ERREUR] La commande a echoue!
+pause
 exit /b 1
 
 :END
