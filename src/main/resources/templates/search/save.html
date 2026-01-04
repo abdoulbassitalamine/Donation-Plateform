@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Sauvegarder la recherche - DonoPlatform</title>
+    <link rel="stylesheet" th:href="@{/css/forms.css}">
+    <link rel="stylesheet" th:href="@{/css/search.css}">
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="save-search-container">
+        <div class="save-search-card">
+            <h1 class="save-search-title">💾 Sauvegarder cette recherche</h1>
+
+            <form th:action="@{/search/save}" method="POST" class="save-search-form">
+
+                <!-- Nom de la recherche -->
+                <div class="form-field">
+                    <label for="name">
+                        Nom de la recherche *
+                    </label>
+                    <input type="text"
+                           id="name"
+                           name="name"
+                           required
+                           placeholder="Ex: Meubles Paris">
+                </div>
+
+                <!-- Critères (cachés) -->
+                <input type="hidden" name="geographicArea" th:value="${savedSearchRequest.geographicArea}"/>
+                <input type="hidden" name="itemCondition" th:value="${savedSearchRequest.itemCondition?.name()}"/>
+                <input type="hidden" name="keywords"
+                       th:value="${savedSearchRequest.keywords != null ? #strings.listJoin(savedSearchRequest.keywords, ','): ''}"/>
+
+                <!-- Affichage des critères -->
+                <div class="criteria-preview">
+                    <p class="criteria-preview-label">Critères de recherche :</p>
+                    <div class="criteria-preview-tags">
+                        <span th:if="${savedSearchRequest.geographicArea != null}"
+                              class="search-criteria-tag criteria-tag-location">
+                            📍 <span th:text="${savedSearchRequest.geographicArea}">Zone</span>
+                        </span>
+                        <span th:if="${savedSearchRequest.itemCondition != null}"
+                              class="search-criteria-tag criteria-tag-condition">
+                            ⭐ <span th:text="${savedSearchRequest.itemCondition.label}">État</span>
+                        </span>
+                        <span th:if="${savedSearchRequest.keywords != null and !savedSearchRequest.keywords.isEmpty()}"
+                              th:each="keyword : ${savedSearchRequest.keywords}"
+                              class="search-criteria-tag criteria-tag-text">
+                            🏷️ <span th:text="${keyword}">Mot-clé</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Notifications -->
+                <div>
+                    <label class="notification-toggle">
+                        <input type="checkbox"
+                               name="notificationsEnabled"
+                               checked>
+                        <span>
+                            🔔 Recevoir des notifications pour les nouvelles annonces
+                        </span>
+                    </label>
+                </div>
+
+                <!-- Boutons -->
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit">
+                        ✅ Sauvegarder
+                    </button>
+                    <a th:href="@{/search}" class="btn-cancel">
+                        Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

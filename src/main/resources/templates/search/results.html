@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout}">
+<head>
+    <title>Résultats de recherche - DonoPlatform</title>
+    <link rel="stylesheet" th:href="@{/css/announcements.css}">
+    <link rel="stylesheet" th:href="@{/css/search.css}">
+</head>
+<body>
+<div layout:fragment="content">
+    <!-- Critères de recherche -->
+    <div class="search-results-header">
+        <div class="search-results-top">
+            <div class="search-results-info">
+                <h1>Résultats de recherche</h1>
+                <p>
+                    <span th:text="${announcements.totalElements}">0</span> annonce(s) trouvée(s)
+                </p>
+            </div>
+
+            <div class="search-results-actions" sec:authorize="isAuthenticated()">
+                <!-- Bouton Sauvegarder -->
+                <form th:action="@{/search/save}" method="GET" style="display: inline;">
+                    <input type="hidden" name="searchText" th:value="${searchRequest.searchText}"/>
+                    <input type="hidden" name="geographicArea" th:value="${searchRequest.geographicArea}"/>
+                    <input type="hidden" name="itemCondition" th:value="${searchRequest.itemCondition?.name()}"/>
+                    <button type="submit" class="btn-save-search">
+                        💾 Sauvegarder
+                    </button>
+                </form>
+
+                <a th:href="@{/search}" class="btn-new-search">
+                    🔍 Nouvelle recherche
+                </a>
+            </div>
+
+            <div class="search-results-actions" sec:authorize="!isAuthenticated()">
+                <a th:href="@{/search}" class="btn-new-search">
+                    🔍 Nouvelle recherche
+                </a>
+            </div>
+        </div>
+
+        <!-- Afficher les critères de recherche -->
+        <div th:if="${searchRequest.searchText != null or searchRequest.geographicArea != null}"
+             class="search-criteria-section">
+            <p class="search-criteria-label">Critères de recherche :</p>
+            <div class="search-criteria-tags">
+                <span th:if="${searchRequest.searchText != null and !#strings.isEmpty(searchRequest.searchText)}"
+                      class="criteria-tag criteria-tag-text">
+                    🔎 <span th:text="${searchRequest.searchText}">Texte</span>
+                </span>
+                <span th:if="${searchRequest.geographicArea != null and !#strings.isEmpty(searchRequest.geographicArea)}"
+                      class="criteria-tag criteria-tag-location">
+                    📍 <span th:text="${searchRequest.geographicArea}">Zone</span>
+                </span>
+                <span th:if="${searchRequest.itemCondition != null}"
+                      class="criteria-tag criteria-tag-condition">
+                    ⭐ <span th:text="${searchRequest.itemCondition.label}">État</span>
+                </span>
+                <span th:if="${searchRequest.status != null}"
+                      class="criteria-tag criteria-tag-status">
+                    📊 <span th:text="${searchRequest.status.label}">Statut</span>
+                </span>
+                <span th:if="${searchRequest.handDelivery != null and searchRequest.handDelivery}"
+                      class="criteria-tag criteria-tag-delivery">
+                    🤝 Main propre
+                </span>
+                <span th:if="${searchRequest.canShip != null and searchRequest.canShip}"
+                      class="criteria-tag criteria-tag-shipping">
+                    📦 Envoi possible
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grille des résultats -->
+    <div th:if="${!announcements.isEmpty()}" class="search-results-grid">
+        <div th:each="announcement : ${announcements.content}" class="announcement-card">
+            <div class="announcement-image">
+                <img th:if="${!announcement.images.isEmpty()}"
+                     th:src="@{/images/{id}/download(id=${announcement.images.iterator().next().id})}"
+                     th:alt="${announcement.title}">
+                <div th:unless="${!announcement.images.isEmpty()}" class="announcement-image-placeholder">
+                    📦 Pas d'image
+                </div>
+            </div>
+
+            <div class="announcement-content">
+                <h3 class="announcement-title" th:text="${announcement.title}">
+                    Titre
+                </h3>
+
+                <p class="announcement-description"
+                   th:text="${#strings.abbreviate(announcement.description, 100)}">
+                    Description...
+                </p>
+
+                <div class="announcement-badges">
+                    <span th:classappend="${announcement.status.name() == 'AVAILABLE' ? 'badge-available' :
+                                          announcement.status.name() == 'RESERVED' ? 'badge-reserved' :
+                                          'badge-given'}"
+                          class="badge"
+                          th:text="${announcement.status.label}">
+                        Statut
+                    </span>
+                    <span class="badge badge-condition"
+                          th:text="${announcement.itemCondition.label}">
+                        État
+                    </span>
+                </div>
+
+                <div class="announcement-footer">
+                    <span>📍 <span th:text="${announcement.geographicArea}">Zone</span></span>
+                    <span th:text="${#temporals.format(announcement.publicationDate, 'dd/MM/yyyy')}">Date</span>
+                </div>
+
+                <a th:href="@{/announcements/{id}(id=${announcement.id})}" class="announcement-btn">
+                    Voir détails
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message si aucun résultat -->
+    <div th:if="${announcements.isEmpty()}" class="search-results-empty">
+        <div class="search-results-empty-icon">🔍</div>
+        <h2 class="search-results-empty-title">Aucun résultat trouvé</h2>
+        <p class="search-results-empty-text">
+            Essayez de modifier vos critères de recherche ou de rechercher avec moins de filtres.
+        </p>
+        <a th:href="@{/search}" class="btn-empty-new-search">
+            Nouvelle recherche
+        </a>
+    </div>
+
+    <!-- Pagination -->
+    <div th:if="${announcements.totalPages > 1}" class="search-pagination">
+        <!-- Bouton Précédent -->
+        <form th:if="${currentPage > 0}" th:action="@{/search}" method="POST">
+            <input type="hidden" name="searchText" th:value="${searchRequest.searchText}"/>
+            <input type="hidden" name="geographicArea" th:value="${searchRequest.geographicArea}"/>
+            <input type="hidden" name="itemCondition" th:value="${searchRequest.itemCondition}"/>
+            <input type="hidden" name="status" th:value="${searchRequest.status}"/>
+            <input type="hidden" name="handDelivery" th:value="${searchRequest.handDelivery}"/>
+            <input type="hidden" name="canShip" th:value="${searchRequest.canShip}"/>
+            <input type="hidden" name="page" th:value="${currentPage - 1}"/>
+            <button type="submit" class="btn-pagination">
+                ← Précédent
+            </button>
+        </form>
+
+        <span class="pagination-info">
+            Page <span th:text="${currentPage + 1}">1</span>
+            sur <span th:text="${announcements.totalPages}">1</span>
+        </span>
+
+        <!-- Bouton Suivant -->
+        <form th:if="${currentPage < announcements.totalPages - 1}" th:action="@{/search}" method="POST">
+            <input type="hidden" name="searchText" th:value="${searchRequest.searchText}"/>
+            <input type="hidden" name="geographicArea" th:value="${searchRequest.geographicArea}"/>
+            <input type="hidden" name="itemCondition" th:value="${searchRequest.itemCondition}"/>
+            <input type="hidden" name="status" th:value="${searchRequest.status}"/>
+            <input type="hidden" name="handDelivery" th:value="${searchRequest.handDelivery}"/>
+            <input type="hidden" name="canShip" th:value="${searchRequest.canShip}"/>
+            <input type="hidden" name="page" th:value="${currentPage + 1}"/>
+            <button type="submit" class="btn-pagination">
+                Suivant →
+            </button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

@@ -1,10 +1,14 @@
 package fr.isima.glia.donoplatform.dto;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.springframework.hateoas.RepresentationModel;
+
 import java.time.LocalDateTime;
 
 @Data
-public class UserDto {
+@EqualsAndHashCode(callSuper = true)
+public class UserDto extends RepresentationModel<UserDto> {
     private Long id;
     private String username;
     private String email;

@@ -14,9 +14,12 @@ public class DonoUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found!"));
+    public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(usernameOrEmail)
+                .orElseGet(() -> userRepository.findByUsername(usernameOrEmail)
+                        .orElseThrow(() -> new UsernameNotFoundException(
+                                "User not found with email or username: " + usernameOrEmail)));
+
         return DonoUserDetails.buildUserDetails(user);
     }
 }

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Inscription - DonoPlatform</title>
+    <link rel="stylesheet" th:href="@{/css/forms.css}">
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="auth-container">
+        <div class="auth-container-inner">
+            <div class="auth-header">
+                <h2 class="auth-title">
+                    Inscription
+                </h2>
+                <p class="auth-subtitle">
+                    Créez votre compte DonoPlatform
+                </p>
+            </div>
+
+            <!-- Message d'erreur -->
+            <div th:if="${error}" class="alert alert-error">
+                <span th:text="${error}"></span>
+            </div>
+
+            <!-- Formulaire -->
+            <div class="auth-card">
+                <form th:action="@{/auth/register}"
+                      th:object="${user}"
+                      method="POST"
+                      class="auth-form">
+
+                    <div class="form-row form-row-2">
+                        <div class="form-field">
+                            <label for="firstName">
+                                Prénom
+                            </label>
+                            <input id="firstName"
+                                   th:field="*{firstName}"
+                                   type="text"
+                                   placeholder="Jean">
+                            <span th:if="${#fields.hasErrors('firstName')}"
+                                  th:errors="*{firstName}"
+                                  class="form-error"></span>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="lastName">
+                                Nom
+                            </label>
+                            <input id="lastName"
+                                   th:field="*{lastName}"
+                                   type="text"
+                                   placeholder="Dupont">
+                            <span th:if="${#fields.hasErrors('lastName')}"
+                                  th:errors="*{lastName}"
+                                  class="form-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="username">
+                            Nom d'utilisateur *
+                        </label>
+                        <input id="username"
+                               th:field="*{username}"
+                               type="text"
+                               required
+                               placeholder="jeandupont">
+                        <span th:if="${#fields.hasErrors('username')}"
+                              th:errors="*{username}"
+                              class="form-error"></span>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="email">
+                            Email *
+                        </label>
+                        <input id="email"
+                               th:field="*{email}"
+                               type="email"
+                               required
+                               placeholder="jean.dupont@email.com">
+                        <span th:if="${#fields.hasErrors('email')}"
+                              th:errors="*{email}"
+                              class="form-error"></span>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="phoneNumber">
+                            Téléphone
+                        </label>
+                        <input id="phoneNumber"
+                               th:field="*{phoneNumber}"
+                               type="tel"
+                               placeholder="06 12 34 56 78">
+                    </div>
+
+                    <div class="form-field">
+                        <label for="password">
+                            Mot de passe *
+                        </label>
+                        <input id="password"
+                               th:field="*{password}"
+                               type="password"
+                               required
+                               placeholder="••••••••">
+                        <span th:if="${#fields.hasErrors('password')}"
+                              th:errors="*{password}"
+                              class="form-error"></span>
+                    </div>
+
+                    <button type="submit" class="auth-submit">
+                        S'inscrire
+                    </button>
+
+                    <div class="auth-footer">
+                        <p>
+                            Déjà un compte ?
+                            <a th:href="@{/auth/login}">
+                                Se connecter
+                            </a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

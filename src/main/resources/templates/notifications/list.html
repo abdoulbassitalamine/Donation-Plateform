@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Notifications - DonoPlatform</title>
+    <link rel="stylesheet" th:href="@{/css/collections.css}">
+    <meta http-equiv="refresh" content="30">
+</head>
+<body>
+<div layout:fragment="content">
+    <div style="max-width: 64rem; margin: 0 auto;">
+        <!-- En-tête -->
+        <div class="notifications-header">
+            <div class="notifications-header-info">
+                <h1>🔔 Notifications</h1>
+                <p>
+                    <span th:if="${unreadCount > 0}"
+                          class="count"
+                          th:text="${unreadCount}">0</span>
+                    <span th:if="${unreadCount > 0}"> notification(s) non lue(s)</span>
+                    <span th:if="${unreadCount == 0}">Aucune notification non lue</span>
+                </p>
+            </div>
+
+            <div class="notifications-actions">
+                <!-- Toggle affichage -->
+                <a th:href="@{/notifications(unreadOnly=${!unreadOnly})}"
+                   th:classappend="${unreadOnly ? 'btn-toggle-filter-unread' : 'btn-toggle-filter-all'}"
+                   class="btn-toggle-filter">
+                    <span th:if="${unreadOnly}">📋 Voir tout</span>
+                    <span th:unless="${unreadOnly}">🔔 Non lues uniquement</span>
+                </a>
+
+                <!-- Marquer tout comme lu -->
+                <form th:if="${unreadCount > 0}"
+                      th:action="@{/notifications/read-all}"
+                      method="POST"
+                      style="display: inline;">
+                    <button type="submit" class="btn-mark-all-read">
+                        ✓ Tout marquer comme lu
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Liste des notifications -->
+        <div th:if="${!notifications.isEmpty()}" class="notifications-list">
+            <div th:each="notification : ${notifications}"
+                 th:classappend="${notification.isRead ? 'notification-card-read' : 'notification-card-unread'}"
+                 class="notification-card">
+
+                <div class="notification-content">
+                    <div class="notification-info">
+                        <!-- En-tête notification -->
+                        <div class="notification-header">
+                            <span th:unless="${notification.isRead}" class="notification-unread-indicator"></span>
+
+                            <h3 class="notification-name"
+                                th:text="${notification.savedSearchName != null ? notification.savedSearchName : 'Nouvelle annonce'}">
+                                Recherche
+                            </h3>
+
+                            <span class="notification-time"
+                                  th:text="${#temporals.format(notification.createdAt, 'dd/MM/yyyy HH:mm')}">
+                                Date
+                            </span>
+                        </div>
+
+                        <!-- Message -->
+                        <p class="notification-message" th:text="${notification.message}">
+                            Message de notification
+                        </p>
+
+                        <!-- Actions -->
+                        <div class="notification-actions">
+                            <a th:href="@{/announcements/{id}(id=${notification.announcementId})}"
+                               class="btn-view-announcement-notif">
+                                <span>📢</span>
+                                <span>Voir l'annonce</span>
+                            </a>
+
+                            <!-- Marquer comme lu -->
+                            <form th:if="${!notification.isRead}"
+                                  th:action="@{/notifications/{id}/read(id=${notification.id})}"
+                                  method="POST"
+                                  style="display: inline;">
+                                <button type="submit" class="btn-mark-read">
+                                    <span>✓</span>
+                                    <span>Marquer comme lue</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Icône notification -->
+                    <div class="notification-icon">
+                        <span th:if="${!notification.isRead}">🔔</span>
+                        <span th:unless="${!notification.isRead}">🔕</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message si vide -->
+        <div th:if="${notifications.isEmpty()}" class="notifications-empty-state">
+            <div class="notifications-empty-icon">
+                <span th:if="${unreadOnly}">✅</span>
+                <span th:unless="${unreadOnly}">🔔</span>
+            </div>
+            <h2 class="notifications-empty-title">
+                <span th:if="${unreadOnly}">Aucune notification non lue</span>
+                <span th:unless="${unreadOnly}">Aucune notification</span>
+            </h2>
+            <p class="notifications-empty-text">
+                <span th:if="${unreadOnly}">Parfait ! Vous êtes à jour 🎉</span>
+                <span th:unless="${unreadOnly}">
+                    Les nouvelles annonces correspondant à vos recherches sauvegardées apparaîtront ici
+                </span>
+            </p>
+            <div class="notifications-empty-actions">
+                <a th:if="${unreadOnly}"
+                   th:href="@{/notifications(unreadOnly=false)}"
+                   class="btn-empty-action">
+                    📋 Voir toutes les notifications
+                </a>
+                <a th:unless="${unreadOnly}"
+                   th:href="@{/search}"
+                   class="btn-empty-action">
+                    🔍 Créer une recherche sauvegardée
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

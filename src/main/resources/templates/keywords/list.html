@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Mots-clés - DonoPlatform</title>
+    <link rel="stylesheet" th:href="@{/css/search.css}">
+</head>
+<body>
+<div layout:fragment="content">
+    <h1 class="keywords-title">📌 Tous les mots-clés</h1>
+
+    <div class="keywords-container">
+        <div class="keywords-list">
+            <a th:each="keyword : ${keywords}"
+               th:href="@{/search/results(searchText=${keyword.name})}"
+               class="keyword-tag">
+                <span th:text="${keyword.name}">mot-clé</span>
+            </a>
+        </div>
+
+        <div th:if="${keywords.isEmpty()}" class="keywords-empty">
+            <div class="keywords-empty-icon">📌</div>
+            <p class="keywords-empty-text">Aucun mot-clé disponible</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

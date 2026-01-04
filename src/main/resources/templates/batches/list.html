@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Mes lots - DonoPlatform</title>
+    <link rel="stylesheet" th:href="@{/css/collections.css}">
+</head>
+<body>
+<div layout:fragment="content">
+    <!-- En-tête -->
+    <div class="batches-header">
+        <div class="batches-header-info">
+            <h1>📦 Mes lots</h1>
+            <p>Regroupez vos annonces en lots pour faciliter les dons groupés</p>
+            <p class="count">
+                <span th:text="${batches.size()}">0</span> lot(s) créé(s)
+            </p>
+        </div>
+
+        <button onclick="showCreateModal()" class="btn-create-batch">
+            ➕ Créer un lot
+        </button>
+    </div>
+
+    <!-- Liste des batches -->
+    <div th:if="${!batches.isEmpty()}" class="batches-list">
+        <div th:each="batch : ${batches}" class="batch-card">
+            <!-- En-tête du batch -->
+            <div class="batch-header">
+                <div class="batch-header-content">
+                    <div class="batch-info">
+                        <h3 class="batch-title">Lot #<span th:text="${batch.id}">1</span></h3>
+                        <p class="batch-date">
+                            Créé le <span th:text="${#temporals.format(batch.createdAt, 'dd MMMM yyyy à HH:mm')}">date</span>
+                        </p>
+                    </div>
+                    <div class="batch-actions">
+                        <a th:href="@{/batches/{id}(id=${batch.id})}" class="btn-view-batch">
+                            👁️ Voir
+                        </a>
+                        <form th:action="@{/batches/{id}(id=${batch.id})}"
+                              method="POST"
+                              onsubmit="return confirm('Supprimer ce lot ?');"
+                              style="display: inline;">
+                            <input type="hidden" name="_method" value="DELETE"/>
+                            <button type="submit" class="btn-delete-batch">
+                                🗑️
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grille des annonces -->
+            <div class="batch-body">
+                <div class="batch-announcements-grid">
+                    <div th:each="announcement : ${batch.announcements}"
+                         class="batch-announcement-item"
+                         th:onclick="|window.location.href='/announcements/${announcement.id}'|">
+                        <h4 class="batch-announcement-title" th:text="${announcement.title}">Titre</h4>
+                        <span th:classappend="${announcement.status.name() == 'AVAILABLE' ? 'tag-available' :
+                                              announcement.status.name() == 'RESERVED' ? 'tag-reserved' :
+                                              'tag-given'}"
+                              class="tag"
+                              th:text="${announcement.status.label}">
+                            Statut
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message si vide -->
+    <div th:if="${batches.isEmpty()}" class="batches-empty-state">
+        <div class="batches-empty-icon">📦</div>
+        <h2 class="batches-empty-title">Aucun lot créé</h2>
+        <button onclick="showCreateModal()" class="batches-empty-btn">
+            ➕ Créer mon premier lot
+        </button>
+    </div>
+
+    <!-- Modal de création de lot -->
+    <div id="createBatchModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-header-content">
+                    <h2 class="modal-title">➕ Créer un nouveau lot</h2>
+                    <button onclick="closeCreateModal()" class="modal-close">&times;</button>
+                </div>
+            </div>
+
+            <form th:action="@{/batches}" method="POST">
+                <div class="modal-body">
+                    <div class="modal-info">
+                        <p>
+                            <span id="selectedCount">0</span> annonce(s) sélectionnée(s)
+                        </p>
+                    </div>
+
+                    <div id="announcementsList" class="modal-list">
+                        <div th:each="announcement : ${userAnnouncements}"
+                             class="modal-list-item"
+                             onclick="toggleCheckbox(this)">
+                            <div class="modal-list-item-content">
+                                <input type="checkbox" name="announcementIds" th:value="${announcement.id}"
+                                       onchange="updateSelectedCount()" onclick="event.stopPropagation()">
+                                <div class="modal-list-item-info">
+                                    <h4 class="modal-list-item-title" th:text="${announcement.title}">Titre</h4>
+                                    <p class="modal-list-item-status" th:text="${announcement.status.label}">Statut</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" onclick="closeCreateModal()" class="btn-modal-cancel">
+                        Annuler
+                    </button>
+                    <button type="submit" id="submitBatchBtn" disabled class="btn-modal-submit">
+                        ✅ Créer le lot
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<th:block layout:fragment="scripts">
+    <script>
+        function showCreateModal() {
+            const modal = document.getElementById('createBatchModal');
+            modal.classList.add('active');
+            updateSelectedCount();
+        }
+
+        function closeCreateModal() {
+            const modal = document.getElementById('createBatchModal');
+            modal.classList.remove('active');
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            updateSelectedCount();
+        }
+
+        function toggleCheckbox(element) {
+            const checkbox = element.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            const checkboxes = document.querySelectorAll('input[name="announcementIds"]:checked');
+            const count = checkboxes.length;
+            const submitBtn = document.getElementById('submitBatchBtn');
+            const countDisplay = document.getElementById('selectedCount');
+
+            countDisplay.textContent = count;
+
+            if (count > 0) {
+                submitBtn.disabled = false;
+            } else {
+                submitBtn.disabled = true;
+            }
+        }
+    </script>
+</th:block>
+</body>
+</html>

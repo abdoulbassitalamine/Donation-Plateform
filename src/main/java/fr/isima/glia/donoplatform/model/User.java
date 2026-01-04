@@ -7,6 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -78,4 +79,9 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id")
     )
     private Collection<Role> roles = new HashSet<>();
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, username, email, firstName, lastName, createdAt);
+    }
 }

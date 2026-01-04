@@ -1,5 +1,8 @@
 package fr.isima.glia.donoplatform.service.message;
 
+import fr.isima.glia.donoplatform.controller.api.AnnouncementApiController;
+import fr.isima.glia.donoplatform.controller.api.MessageApiController;
+import fr.isima.glia.donoplatform.controller.api.UserApiController;
 import fr.isima.glia.donoplatform.dto.MessageDto;
 import fr.isima.glia.donoplatform.exceptions.ResourceNotFoundException;
 import fr.isima.glia.donoplatform.exceptions.UnauthorizedAccessException;
@@ -15,6 +18,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import java.util.List;
 
 @Service
@@ -53,6 +57,47 @@ public class MessageService implements IMessageService {
     @Override
     public MessageDto convertToDto(Message message) {
         MessageDto dto = modelMapper.map(message, MessageDto.class);
+
+        // ============================================================
+        // HATEOAS - Ajout des liens hypermedia
+        // ============================================================
+        try {
+            // Self link
+            dto.add(linkTo(methodOn(MessageApiController.class)
+                    .getMessageById(message.getId(), null, null))
+                    .withSelfRel());
+
+            // Sender link
+            dto.add(linkTo(methodOn(UserApiController.class)
+                    .getUserById(message.getSender().getId(), null))
+                    .withRel("sender"));
+
+            // Receiver link
+            dto.add(linkTo(methodOn(UserApiController.class)
+                    .getUserById(message.getReceiver().getId(), null))
+                    .withRel("receiver"));
+
+            // Announcement link
+            dto.add(linkTo(methodOn(AnnouncementApiController.class)
+                    .getAnnouncementById(message.getAnnouncement().getId(), null))
+                    .withRel("announcement"));
+
+            // Conversation link
+            dto.add(linkTo(methodOn(MessageApiController.class)
+                    .getConversation(message.getAnnouncement().getId(), null, null, null))
+                    .withRel("conversation"));
+
+            // Mark as read link
+            if (!message.getRead()) {
+                dto.add(linkTo(methodOn(MessageApiController.class)
+                        .markAsRead(message.getId(), null))
+                        .withRel("markAsRead"));
+            }
+
+        } catch (Exception e) {
+            // Si erreur de génération de lien, on continue sans bloquer
+        }
+
         return dto;
     }
 
@@ -86,5 +131,16 @@ public class MessageService implements IMessageService {
     public int getUnreadCount(Long userId) {
         User user = userService.getUserById(userId);
         return messageRepository.countUnreadMessages(user);
+    }
+
+    @Override
+    public List<Message> getMessagesBySender(Long senderId) {
+        User sender = userService.getUserById(senderId);
+        return messageRepository.findBySender(sender);
+    }
+    @Override
+    public Long getAnnouncementOwnerId(Long announcementId, Long currentUserId) {
+        Announcement announcement = announcementService.getAnnouncementById(announcementId);
+        return announcement.getOwner().getId();
     }
 }

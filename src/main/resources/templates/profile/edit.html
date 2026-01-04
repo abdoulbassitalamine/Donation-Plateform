@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Modifier mon profil - DonoPlatform</title>
+    <link rel="stylesheet" th:href="@{/css/forms.css}">
+    <link rel="stylesheet" th:href="@{/css/profile.css}">
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="profile-edit-container">
+        <!-- En-tête -->
+        <div class="profile-edit-header">
+            <a th:href="@{/users/{id}(id=${user.id})}" class="back-link">
+                ← Retour au profil
+            </a>
+            <h1 class="profile-edit-title">✏️ Modifier mon profil</h1>
+            <p class="profile-edit-subtitle">Mettez à jour vos informations personnelles</p>
+        </div>
+
+        <!-- Formulaire -->
+        <div class="form-card">
+            <form th:action="@{/users/{id}(id=${user.id})}" method="POST" class="form-groups">
+
+                <!-- Hidden field pour simuler PUT -->
+                <input type="hidden" name="_method" value="PUT"/>
+
+                <!-- Message d'erreur -->
+                <div th:if="${error}" class="alert alert-error">
+                    <span th:text="${error}">Erreur</span>
+                </div>
+
+                <!-- Nom d'utilisateur (lecture seule) -->
+                <div class="form-field">
+                    <label>Nom d'utilisateur</label>
+                    <input type="text"
+                           th:value="${user.username}"
+                           readonly>
+                    <p class="form-help-text">Le nom d'utilisateur ne peut pas être modifié</p>
+                </div>
+
+                <!-- Email -->
+                <div class="form-field">
+                    <label for="email">Email</label>
+                    <input type="email"
+                           id="email"
+                           name="email"
+                           th:value="${user.email}">
+                </div>
+
+                <!-- Prénom et Nom -->
+                <div class="form-row form-row-2">
+                    <div class="form-field">
+                        <label for="firstName">Prénom</label>
+                        <input type="text"
+                               id="firstName"
+                               name="firstName"
+                               th:value="${user.firstName}">
+                    </div>
+
+                    <div class="form-field">
+                        <label for="lastName">Nom</label>
+                        <input type="text"
+                               id="lastName"
+                               name="lastName"
+                               th:value="${user.lastName}">
+                    </div>
+                </div>
+
+                <!-- Téléphone -->
+                <div class="form-field">
+                    <label for="phoneNumber">Téléphone</label>
+                    <input type="tel"
+                           id="phoneNumber"
+                           name="phoneNumber"
+                           th:value="${user.phoneNumber}"
+                           placeholder="06 12 34 56 78">
+                </div>
+
+                <!-- Mot de passe -->
+                <div class="form-field">
+                    <label for="password">Nouveau mot de passe</label>
+                    <input type="password"
+                           id="password"
+                           name="password"
+                           placeholder="Laissez vide pour ne pas changer">
+                    <p class="form-help-text">Minimum 6 caractères</p>
+                </div>
+
+                <!-- Boutons -->
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit">
+                        ✅ Enregistrer les modifications
+                    </button>
+                    <a th:href="@{/users/{id}(id=${user.id})}" class="btn-cancel">
+                        Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Informations du compte -->
+        <div class="account-info-card">
+            <h3 class="account-info-title">Informations du compte</h3>
+            <div class="account-info-list">
+                <p>
+                    <span class="account-info-label">Membre depuis :</span>
+                    <span th:text="${#temporals.format(user.createdAt, 'dd MMMM yyyy')}">Date</span>
+                </p>
+                <p>
+                    <span class="account-info-label">Statut :</span>
+                    <span th:if="${user.active}" class="account-status-active">Actif</span>
+                    <span th:unless="${user.active}" class="account-status-inactive">Inactif</span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

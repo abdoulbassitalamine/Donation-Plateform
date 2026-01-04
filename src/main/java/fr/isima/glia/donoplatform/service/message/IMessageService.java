@@ -14,4 +14,6 @@ public interface IMessageService {
     List<Message> getConversation(Long userId, Long announcementId);
     void markAsRead(Long messageId, Long userId);
     int getUnreadCount(Long userId);
+    List<Message> getMessagesBySender(Long senderId);
+    Long getAnnouncementOwnerId(Long announcementId, Long currentUserId);
 }

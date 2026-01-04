@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Recherche avancée - DonoPlatform</title>
+    <link rel="stylesheet" th:href="@{/css/forms.css}">
+    <link rel="stylesheet" th:href="@{/css/search.css}">
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="search-container">
+        <div class="search-card">
+            <h1 class="search-title">🔍 Recherche avancée</h1>
+
+            <!-- Formulaire POST vers /search -->
+            <form th:action="@{/search}"
+                  th:object="${searchRequest}"
+                  method="POST"
+                  class="search-form">
+
+                <!-- Recherche textuelle -->
+                <div class="form-field">
+                    <label for="searchText">
+                        Recherche par texte
+                    </label>
+                    <input type="text"
+                           id="searchText"
+                           th:field="*{searchText}"
+                           placeholder="Mot-clé, titre, description...">
+                </div>
+
+                <!-- Zone géographique -->
+                <div class="form-field">
+                    <label for="geographicArea">
+                        Zone géographique
+                    </label>
+                    <input type="text"
+                           id="geographicArea"
+                           th:field="*{geographicArea}"
+                           placeholder="Ville, département, région...">
+                </div>
+
+                <!-- Filtres -->
+                <div class="form-row form-row-2">
+                    <!-- État -->
+                    <div class="form-field">
+                        <label for="itemCondition">
+                            État de l'objet
+                        </label>
+                        <select id="itemCondition" th:field="*{itemCondition}">
+                            <option value="">Tous les états</option>
+                            <option th:each="condition : ${itemConditions}"
+                                    th:value="${condition.name()}"
+                                    th:text="${condition.label}">
+                                État
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Statut -->
+                    <div class="form-field">
+                        <label for="status">
+                            Statut
+                        </label>
+                        <select id="status" th:field="*{status}">
+                            <option value="">Tous les statuts</option>
+                            <option th:each="stat : ${statuses}"
+                                    th:value="${stat.name()}"
+                                    th:text="${stat.label}">
+                                Statut
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Options de remise -->
+                <div class="checkbox-group">
+                    <label>Options de remise</label>
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <label class="checkbox-item">
+                            <input type="checkbox"
+                                   id="handDelivery"
+                                   th:field="*{handDelivery}">
+                            <span>Remise en main propre uniquement</span>
+                        </label>
+
+                        <label class="checkbox-item">
+                            <input type="checkbox"
+                                   id="canShip"
+                                   th:field="*{canShip}">
+                            <span>Envoi possible</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Boutons -->
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit">
+                        🔍 Rechercher
+                    </button>
+                    <button type="reset" class="btn-cancel">
+                        🔄 Réinitialiser
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

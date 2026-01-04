@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "favorites", uniqueConstraints = {
@@ -34,4 +35,9 @@ public class Favorite {
     @JoinColumn(name = "announcement_id", nullable = false)
     @ToString.Exclude
     private Announcement announcement;
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, createdAt, user.getId(), announcement.getId());
+    }
 }

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Annonces - DonoPlatform</title>
+    <link rel="stylesheet" th:href="@{/css/announcements.css}">
+    <script th:src="@{/js/pages/announcement-list.js}" defer></script>
+</head>
+<body>
+<div layout:fragment="content">
+    <!-- Header de la page -->
+    <div class="page-header">
+        <h1 class="page-title">Toutes les annonces</h1>
+        <a th:href="@{/announcements/create}" class="btn-create">
+            ➕ Publier une annonce
+        </a>
+    </div>
+
+    <!-- Barre de filtres -->
+    <div class="filters-bar">
+        <div class="filter-group">
+            <label for="sortBy" class="filter-label">Trier par</label>
+            <select id="sortBy" class="filter-select">
+                <option value="publicationDate" th:selected="${sortBy == 'publicationDate'}">
+                    Date de publication
+                </option>
+                <option value="title" th:selected="${sortBy == 'title'}">
+                    Titre
+                </option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="sortOrder" class="filter-label">Ordre</label>
+            <select id="sortOrder" class="filter-select">
+                <option value="desc" th:selected="${sortOrder == 'desc'}">
+                    Plus récent
+                </option>
+                <option value="asc" th:selected="${sortOrder == 'asc'}">
+                    Plus ancien
+                </option>
+            </select>
+        </div>
+
+        <div class="filter-actions">
+            <a th:href="@{/search}" class="btn-search">
+                🔍 Recherche avancée
+            </a>
+        </div>
+    </div>
+
+    <!-- Grille des annonces -->
+    <div class="announcements-list">
+        <div th:each="announcement : ${announcements.content}" class="announcement-card-full">
+
+            <!-- Image -->
+            <div class="announcement-image-full">
+                <img th:if="${!announcement.images.isEmpty()}"
+                     th:src="@{/images/{id}/download(id=${announcement.images.iterator().next().id})}"
+                     th:alt="${announcement.title}">
+                <div th:unless="${!announcement.images.isEmpty()}" class="announcement-image-placeholder-full">
+                    📦
+                </div>
+            </div>
+
+            <!-- Contenu -->
+            <div class="announcement-body">
+                <h3 class="announcement-title-full" th:text="${announcement.title}">
+                    Titre de l'annonce
+                </h3>
+
+                <p class="announcement-desc" th:text="${#strings.abbreviate(announcement.description, 100)}">
+                    Description de l'annonce...
+                </p>
+
+                <!-- Badges -->
+                <div class="announcement-tags">
+                    <span th:classappend="${announcement.status.name() == 'AVAILABLE' ? 'tag-available' :
+                                          announcement.status.name() == 'RESERVED' ? 'tag-reserved' :
+                                          'tag-given'}"
+                          class="tag"
+                          th:text="${announcement.status.label}">
+                        Disponible
+                    </span>
+                    <span class="tag tag-condition" th:text="${announcement.itemCondition.label}">
+                        État
+                    </span>
+                </div>
+
+                <!-- Footer -->
+                <div class="announcement-footer">
+                    <span>📍 <span th:text="${announcement.geographicArea}">Zone</span></span>
+                    <span th:text="${#temporals.format(announcement.publicationDate, 'dd/MM/yyyy')}">
+                        Date
+                    </span>
+                </div>
+
+                <!-- Bouton -->
+                <a th:href="@{/announcements/{id}(id=${announcement.id})}" class="btn-view">
+                    Voir détails
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div th:if="${announcements.totalPages > 1}" class="pagination">
+        <a th:if="${currentPage > 0}"
+           th:href="@{/announcements(page=${currentPage - 1}, size=12, sortBy=${sortBy}, sortOrder=${sortOrder})}"
+           class="pagination-btn">
+            ← Précédent
+        </a>
+
+        <span class="pagination-info">
+            Page <span th:text="${currentPage + 1}">1</span>
+            sur <span th:text="${announcements.totalPages}">1</span>
+        </span>
+
+        <a th:if="${currentPage < announcements.totalPages - 1}"
+           th:href="@{/announcements(page=${currentPage + 1}, size=12, sortBy=${sortBy}, sortOrder=${sortOrder})}"
+           class="pagination-btn">
+            Suivant →
+        </a>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title th:text="'Lot #' + ${batch.id} + ' - DonoPlatform'">Détail du lot</title>
+    <link rel="stylesheet" th:href="@{/css/collections.css}">
+</head>
+<body>
+<div layout:fragment="content">
+    <!-- Navigation -->
+    <div class="batch-detail-header">
+        <div class="batch-detail-nav">
+            <a th:href="@{/batches}">
+                ← Retour aux lots
+            </a>
+        </div>
+
+        <div class="batch-detail-banner">
+            <div class="batch-detail-banner-content">
+                <div class="batch-detail-info">
+                    <h1>
+                        📦 Lot #<span th:text="${batch.id}">1</span>
+                    </h1>
+                    <p class="batch-detail-meta">
+                        Créé le <span th:text="${#temporals.format(batch.createdAt, 'dd MMMM yyyy à HH:mm')}">date</span>
+                    </p>
+                    <div class="batch-detail-badges">
+                        <div class="batch-badge">
+                            <span>👤 </span>
+                            <span th:text="${batch.ownerUsername}">Propriétaire</span>
+                        </div>
+                        <div class="batch-badge">
+                            <span>📦 </span>
+                            <span th:text="${batch.announcements.size()}">0</span> annonce(s)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions avec DELETE method -->
+                <div th:if="${batch.ownerId == userId}">
+                    <form th:action="@{/batches/{id}(id=${batch.id})}"
+                          method="POST"
+                          onsubmit="return confirm('Voulez-vous vraiment supprimer ce lot ?\nLes annonces ne seront pas supprimées.');">
+                        <input type="hidden" name="_method" value="DELETE"/>
+                        <button type="submit" class="btn-delete-batch">
+                            🗑️ Supprimer le lot
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques du lot -->
+    <div class="batch-stats-grid">
+        <div class="batch-stat-card">
+            <div class="batch-stat-content">
+                <div>
+                    <p class="batch-stat-label">Total annonces</p>
+                    <p class="batch-stat-value batch-stat-value-total" th:text="${batch.announcements.size()}">0</p>
+                </div>
+                <div class="batch-stat-icon">📦</div>
+            </div>
+        </div>
+
+        <div class="batch-stat-card">
+            <div class="batch-stat-content">
+                <div>
+                    <p class="batch-stat-label">Disponibles</p>
+                    <p class="batch-stat-value batch-stat-value-available"
+                       th:text="${batch.announcements.?[status.name() == 'AVAILABLE'].size()}">0</p>
+                </div>
+                <div class="batch-stat-icon">✅</div>
+            </div>
+        </div>
+
+        <div class="batch-stat-card">
+            <div class="batch-stat-content">
+                <div>
+                    <p class="batch-stat-label">Réservés</p>
+                    <p class="batch-stat-value batch-stat-value-reserved"
+                       th:text="${batch.announcements.?[status.name() == 'RESERVED'].size()}">0</p>
+                </div>
+                <div class="batch-stat-icon">⏳</div>
+            </div>
+        </div>
+
+        <div class="batch-stat-card">
+            <div class="batch-stat-content">
+                <div>
+                    <p class="batch-stat-label">Donnés</p>
+                    <p class="batch-stat-value batch-stat-value-given"
+                       th:text="${batch.announcements.?[status.name() == 'GIVEN'].size()}">0</p>
+                </div>
+                <div class="batch-stat-icon">🎁</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Annonces du lot -->
+    <div class="batch-announcements-section">
+        <h2 class="batch-announcements-title">
+            📋 Annonces du lot
+        </h2>
+
+        <div class="batch-announcements-grid">
+            <div th:each="announcement : ${batch.announcements}"
+                 class="announcement-card-full"
+                 style="cursor: pointer;"
+                 th:onclick="|window.location.href='/announcements/${announcement.id}'|">
+
+                <!-- Image -->
+                <div class="announcement-image-full">
+                    <img th:if="${!announcement.images.isEmpty()}"
+                         th:src="@{/images/{id}/download(id=${announcement.images.iterator().next().id})}"
+                         th:alt="${announcement.title}">
+                    <div th:unless="${!announcement.images.isEmpty()}" class="announcement-image-placeholder-full">
+                        📦
+                    </div>
+                </div>
+
+                <!-- Contenu -->
+                <div class="announcement-body">
+                    <h3 class="announcement-title-full" th:text="${announcement.title}">
+                        Titre de l'annonce
+                    </h3>
+
+                    <p class="announcement-desc" th:text="${announcement.description}">
+                        Description...
+                    </p>
+
+                    <!-- Badges -->
+                    <div class="announcement-tags">
+                        <span th:classappend="${announcement.status.name() == 'AVAILABLE' ? 'tag-available' :
+                                              announcement.status.name() == 'RESERVED' ? 'tag-reserved' :
+                                              'tag-given'}"
+                              class="tag"
+                              th:text="${announcement.status.label}">
+                            Statut
+                        </span>
+                        <span class="tag tag-condition" th:text="${announcement.itemCondition.label}">
+                            État
+                        </span>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="announcement-footer" style="border-top: 1px solid #E5E7EB; padding-top: 0.75rem;">
+                        📍 <span th:text="${announcement.geographicArea}">Zone</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message si vide -->
+        <div th:if="${batch.announcements.isEmpty()}" class="empty-state">
+            <div class="empty-state-icon">📦</div>
+            <p class="empty-state-text">Ce lot ne contient aucune annonce</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

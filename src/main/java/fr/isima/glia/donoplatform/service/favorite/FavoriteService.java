@@ -1,5 +1,7 @@
 package fr.isima.glia.donoplatform.service.favorite;
 
+import fr.isima.glia.donoplatform.controller.api.AnnouncementApiController;
+import fr.isima.glia.donoplatform.controller.api.FavoriteApiController;
 import fr.isima.glia.donoplatform.dto.FavoriteDto;
 import fr.isima.glia.donoplatform.exceptions.AlreadyExistsException;
 import fr.isima.glia.donoplatform.model.Announcement;
@@ -14,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @Service
 @RequiredArgsConstructor
@@ -59,7 +63,25 @@ public class FavoriteService implements IFavoriteService {
 
     @Override
     public FavoriteDto convertToDto(Favorite favorite) {
-        return modelMapper.map(favorite, FavoriteDto.class);
+        FavoriteDto dto = modelMapper.map(favorite, FavoriteDto.class);
+        try {
+            dto.add(linkTo(methodOn(FavoriteApiController.class)
+                    .getUserFavorites(favorite.getUser().getId(), null))
+                    .withSelfRel());
+
+            dto.add(linkTo(methodOn(AnnouncementApiController.class)
+                    .getAnnouncementById(favorite.getAnnouncement().getId(), null))
+                    .withRel("announcement"));
+
+            dto.add(linkTo(methodOn(FavoriteApiController.class)
+                    .removeFavorite(favorite.getAnnouncement().getId(), null))
+                    .withRel("delete"));
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+
+        return dto;
     }
 
     @Override

@@ -1,8 +1,10 @@
 package fr.isima.glia.donoplatform.service.announcement;
 
+
+import fr.isima.glia.donoplatform.controller.api.AnnouncementApiController;
+import fr.isima.glia.donoplatform.controller.api.ImageApiController;
+import fr.isima.glia.donoplatform.controller.api.UserApiController;
 import fr.isima.glia.donoplatform.dto.AnnouncementDto;
-import fr.isima.glia.donoplatform.dto.ImageDto;
-import fr.isima.glia.donoplatform.dto.KeywordDto;
 import fr.isima.glia.donoplatform.enums.AnnouncementStatus;
 import fr.isima.glia.donoplatform.exceptions.AnnouncementNotFoundException;
 import fr.isima.glia.donoplatform.exceptions.UnauthorizedAccessException;
@@ -26,6 +28,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.hibernate.Hibernate;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @Service
 @RequiredArgsConstructor
@@ -70,9 +76,49 @@ public class AnnouncementService implements IAnnouncementService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public AnnouncementDto convertToDto(Announcement announcement) {
+        Hibernate.initialize(announcement.getImages());
+        Hibernate.initialize(announcement.getKeywords());
 
-        return modelMapper.map(announcement, AnnouncementDto.class);
+        AnnouncementDto dto = modelMapper.map(announcement, AnnouncementDto.class);
+
+        // ============================================================
+        // HATEOAS - Ajout des liens hypermedia
+        // ============================================================
+        try {
+            // Self link
+            dto.add(linkTo(methodOn(AnnouncementApiController.class)
+                    .getAnnouncementById(announcement.getId(), null))
+                    .withSelfRel());
+
+            // Owner link
+            dto.add(linkTo(methodOn(UserApiController.class)
+                    .getUserById(announcement.getOwner().getId(), null))
+                    .withRel("owner"));
+
+            // Images link (si images présentes)
+            if (!announcement.getImages().isEmpty()) {
+                dto.add(linkTo(methodOn(ImageApiController.class)
+                        .getImageById(announcement.getId(), null))
+                        .withRel("images"));
+            }
+
+            // Update link (si propriétaire)
+            dto.add(linkTo(methodOn(AnnouncementApiController.class)
+                    .updateAnnouncement(announcement.getId(), null, null))
+                    .withRel("update"));
+
+            // Delete link (si propriétaire)
+            dto.add(linkTo(methodOn(AnnouncementApiController.class)
+                    .deleteAnnouncement(announcement.getId(), null))
+                    .withRel("delete"));
+
+        } catch (Exception e) {
+            // Si erreur de génération de lien, on continue sans bloquer
+        }
+
+        return dto;
     }
 
     @Override

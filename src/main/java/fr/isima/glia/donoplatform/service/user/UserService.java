@@ -1,5 +1,9 @@
 package fr.isima.glia.donoplatform.service.user;
 
+import fr.isima.glia.donoplatform.controller.api.AnnouncementApiController;
+import fr.isima.glia.donoplatform.controller.api.BatchApiController;
+import fr.isima.glia.donoplatform.controller.api.FavoriteApiController;
+import fr.isima.glia.donoplatform.controller.api.UserApiController;
 import fr.isima.glia.donoplatform.dto.UserDto;
 import fr.isima.glia.donoplatform.exceptions.AlreadyExistsException;
 import fr.isima.glia.donoplatform.exceptions.UserNotFoundException;
@@ -14,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @Service
 @RequiredArgsConstructor
@@ -60,7 +65,47 @@ public class UserService implements IUserService {
 
     @Override
     public UserDto convertToDto(User user) {
-        return modelMapper.map(user, UserDto.class);
+        UserDto dto = modelMapper.map(user, UserDto.class);
+
+        // ============================================================
+        // HATEOAS - Ajout des liens hypermedia
+        // ============================================================
+        try {
+            // Self link
+            dto.add(linkTo(methodOn(UserApiController.class)
+                    .getUserById(user.getId(), null))
+                    .withSelfRel());
+
+            // Announcements link
+            dto.add(linkTo(methodOn(AnnouncementApiController.class)
+                    .getUserAnnouncements(user.getId()))
+                    .withRel("announcements"));
+
+            // Favorites link
+            dto.add(linkTo(methodOn(FavoriteApiController.class)
+                    .getUserFavorites(user.getId(), null))
+                    .withRel("favorites"));
+
+            // Batches link
+            dto.add(linkTo(methodOn(BatchApiController.class)
+                    .getBatchesByUser(user.getId(), null))
+                    .withRel("batches"));
+
+            // Update link
+            dto.add(linkTo(methodOn(UserApiController.class)
+                    .updateUser(user.getId(), null, null))
+                    .withRel("update"));
+
+            // Delete link
+            dto.add(linkTo(methodOn(UserApiController.class)
+                    .deleteUser(user.getId(), null))
+                    .withRel("delete"));
+
+        } catch (Exception e) {
+            // Si erreur de génération de lien, on continue sans bloquer
+        }
+
+        return dto;
     }
 
     @Override

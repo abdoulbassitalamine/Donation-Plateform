@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<header th:fragment="header">
+    <div class="container">
+        <!-- Logo -->
+        <a th:href="@{/}" class="logo">
+            <span class="logo-emoji">🎁</span>
+            <span class="logo-text">
+                Dono<span>Platform</span>
+            </span>
+        </a>
+
+        <!-- Navigation -->
+        <nav>
+            <a th:href="@{/}">Accueil</a>
+            <a th:href="@{/announcements}">Annonces</a>
+            <a th:href="@{/search}">Rechercher</a>
+
+            <!-- AJOUT: Liens pour utilisateurs connectés -->
+            <span sec:authorize="isAuthenticated()">
+                <a th:href="@{/batches}">Mes lots</a>
+            </span>
+        </nav>
+
+        <!-- User section -->
+        <div class="user-section">
+
+            <div sec:authorize="isAuthenticated()" class="user-section">
+
+                <div class="user-actions">
+                    <a th:href="@{/announcements/create}" title="Publier">
+                        <span>📢</span>
+                    </a>
+                    <a th:href="@{/messages}" title="Messages">
+                        <span>💬</span>
+                    </a>
+
+                    <!-- Notifications avec badge -->
+                    <a th:href="@{/notifications}" title="Notifications" class="notification-badge">
+                        <span>🔔</span>
+                        <span th:if="${notificationCount != null && notificationCount > 0}" class="notification-count"
+                              th:text="${notificationCount > 99 ? '99+' : notificationCount}">
+                            0
+                        </span>
+                    </a>
+                </div>
+
+                <div class="user-profile">
+                    <a th:href="@{/users/{id}(id=${#authentication.principal.id})}">
+                        <div class="avatar">
+                            <span th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}">U</span>
+                        </div>
+                        <span class="username" th:text="${#authentication.name}">User</span>
+                    </a>
+
+                    <form th:action="@{/auth/logout}" method="POST" style="display: inline;">
+                        <button type="submit" class="logout-btn" title="Déconnexion">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                            <span class="logout-text">Quitter</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div sec:authorize="!isAuthenticated()" class="guest-actions">
+                <a th:href="@{/auth/login}" class="login-link">
+                    Connexion
+                </a>
+                <a th:href="@{/auth/register}" class="register-link">
+                    S'inscrire
+                </a>
+            </div>
+
+        </div>
+    </div>
+</header>
+</body>
+</html>

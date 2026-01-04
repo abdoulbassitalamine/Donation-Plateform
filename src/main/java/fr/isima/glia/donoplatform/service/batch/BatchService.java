@@ -1,5 +1,8 @@
 package fr.isima.glia.donoplatform.service.batch;
 
+import fr.isima.glia.donoplatform.controller.api.AnnouncementApiController;
+import fr.isima.glia.donoplatform.controller.api.BatchApiController;
+import fr.isima.glia.donoplatform.controller.api.UserApiController;
 import fr.isima.glia.donoplatform.dto.BatchDto;
 import fr.isima.glia.donoplatform.exceptions.ResourceNotFoundException;
 import fr.isima.glia.donoplatform.exceptions.UnauthorizedAccessException;
@@ -15,11 +18,11 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 @Service
 @RequiredArgsConstructor
 public class BatchService implements IBatchService {
@@ -59,7 +62,37 @@ public class BatchService implements IBatchService {
 
     @Override
     public BatchDto convertToDto(Batch batch) {
-        return modelMapper.map(batch, BatchDto.class);
+        BatchDto dto = modelMapper.map(batch, BatchDto.class);
+
+        // ============================================================
+        // HATEOAS - Ajout des liens hypermedia
+        // ============================================================
+        try {
+            // Self link
+            dto.add(linkTo(methodOn(BatchApiController.class)
+                    .getBatchById(batch.getId(), null))
+                    .withSelfRel());
+
+            // Owner link
+            dto.add(linkTo(methodOn(UserApiController.class)
+                    .getUserById(batch.getOwner().getId(), null))
+                    .withRel("owner"));
+
+            // Announcements link
+            dto.add(linkTo(methodOn(AnnouncementApiController.class)
+                    .getUserAnnouncements(batch.getOwner().getId()))
+                    .withRel("announcements"));
+
+            // Delete link
+            dto.add(linkTo(methodOn(BatchApiController.class)
+                    .deleteBatch(batch.getId(), null))
+                    .withRel("delete"));
+
+        } catch (Exception e) {
+            // Si erreur de génération de lien, on continue sans bloquer
+        }
+
+        return dto;
     }
 
     @Override

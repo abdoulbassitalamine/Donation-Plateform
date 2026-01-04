@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout}">
+<head>
+    <title>Messagerie - DonoPlatform</title>
+    <link rel="stylesheet" th:href="@{/css/messages.css}">
+</head>
+<body>
+<div layout:fragment="content">
+    <!-- En-tête -->
+    <div class="messages-header">
+        <div>
+            <h1 class="messages-title">💬 Messagerie</h1>
+            <p class="messages-subtitle">
+                <span th:if="${unreadCount > 0}">
+                    <span class="unread-count" th:text="${unreadCount}">0</span>
+                    message(s) non lu(s)
+                </span>
+                <span th:if="${unreadCount == 0}">Aucun message non lu</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- Liste des messages -->
+    <div class="messages-list">
+        <div th:if="${!messages.isEmpty()}">
+            <!-- En-tête du tableau -->
+            <div class="messages-list-header">
+                <div>Contact</div>
+                <div>Annonce</div>
+                <div>Date</div>
+                <div>Statut</div>
+            </div>
+
+            <!-- Liste des messages -->
+            <div class="messages-list-body">
+                <div th:each="message : ${messages}"
+                     class="message-row"
+                     th:with="otherUserId=${message.senderId == userId ? message.receiverId : message.senderId}"
+                     th:onclick="|window.location.href='/messages/conversation?announcementId=${message.announcementId}&otherUserId=' + ${otherUserId}|">
+
+                    <!-- Contact -->
+                    <div class="message-contact">
+                        <!-- Avatar -->
+                        <div class="contact-avatar">
+                            <span th:if="${message.senderId == userId}"
+                                  th:text="${message.receiverUsername.substring(0,1).toUpperCase()}">U</span>
+                            <span th:unless="${message.senderId == userId}"
+                                  th:text="${message.senderUsername.substring(0,1).toUpperCase()}">U</span>
+                        </div>
+
+                        <!-- Nom -->
+                        <div class="contact-info">
+                            <p class="contact-name">
+                                <span th:if="${message.senderId == userId}"
+                                      th:text="${message.receiverUsername}">Contact</span>
+                                <span th:unless="${message.senderId == userId}"
+                                      th:text="${message.senderUsername}">Contact</span>
+                            </p>
+                            <p class="contact-preview" th:text="${message.content}">
+                                Dernier message...
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Annonce -->
+                    <div class="message-announcement">
+                        <div class="announcement-info">
+                            <p class="announcement-title-msg" th:text="${message.announcementTitle}">
+                                Titre de l'annonce
+                            </p>
+                            <p class="announcement-id">
+                                Annonce #<span th:text="${message.announcementId}">ID</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Date -->
+                    <div class="message-date">
+                        <span class="date-text" th:text="${#temporals.format(message.sentAt, 'dd/MM/yyyy HH:mm')}">
+                            Date
+                        </span>
+                    </div>
+
+                    <!-- Statut -->
+                    <div class="message-status">
+                        <span th:if="${!message.read && message.receiverId == userId}"
+                              class="status-unread"></span>
+                        <span th:if="${message.read || message.receiverId != userId}"
+                              class="status-read">✓</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message si vide -->
+        <div th:if="${messages.isEmpty()}" class="messages-empty">
+            <div class="messages-empty-icon">💬</div>
+            <h3 class="messages-empty-title">Aucun message</h3>
+            <p class="messages-empty-text">Vous n'avez pas encore de conversation</p>
+            <a th:href="@{/announcements}" class="btn-browse">
+                Parcourir les annonces
+            </a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

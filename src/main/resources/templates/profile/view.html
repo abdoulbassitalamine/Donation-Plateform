@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Mon profil - DonoPlatform</title>
+    <link rel="stylesheet" th:href="@{/css/profile.css}">
+</head>
+<body>
+<div layout:fragment="content" th:attr="data-user-id=${userId}">
+    <!-- En-tête du profil -->
+    <div class="profile-header">
+        <div class="profile-header-content">
+            <div class="profile-info">
+                <!-- Avatar -->
+                <div class="profile-avatar-large">
+                    <span th:if="${user != null}" th:text="${user.username.substring(0,1).toUpperCase()}">U</span>
+                    <span th:unless="${user != null}">?</span>
+                </div>
+
+                <!-- Informations utilisateur -->
+                <div class="profile-details">
+                    <h1 class="profile-name">
+                        <span th:if="${user != null}" th:text="${user.firstName + ' ' + user.lastName}">Nom Prénom</span>
+                        <span th:unless="${user != null}">Chargement...</span>
+                    </h1>
+                    <p class="profile-username">
+                        @<span th:if="${user != null}" th:text="${user.username}">username</span>
+                    </p>
+                    <p class="profile-member-since">
+                        Membre depuis <span th:if="${user != null}" th:text="${#temporals.format(user.createdAt, 'MMMM yyyy')}">date</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Bouton modifier -->
+            <div th:if="${isOwnProfile}" class="profile-actions">
+                <a th:href="@{/users/{id}/edit(id=${user.id})}" class="btn-edit-profile">
+                    ✏️ Modifier le profil
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-card-content">
+                <div class="stat-info">
+                    <p class="stat-label">Annonces publiées</p>
+                    <p class="stat-value" th:text="${announcements.size()}">0</p>
+                </div>
+                <div class="stat-icon">📢</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-content">
+                <div class="stat-info">
+                    <p class="stat-label">Favoris</p>
+                    <p class="stat-value" th:text="${favorites.size()}">0</p>
+                </div>
+                <div class="stat-icon">❤️</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-content">
+                <div class="stat-info">
+                    <p class="stat-label">Recherches sauvegardées</p>
+                    <p class="stat-value" th:text="${savedSearches.size()}">0</p>
+                </div>
+                <div class="stat-icon">🔖</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Onglets -->
+    <div class="tabs-container">
+        <div class="tabs-header">
+            <nav class="tabs-nav">
+                <button onclick="showTab('announcements')" id="tab-announcements" class="tab-button active">
+                    Mes annonces
+                </button>
+                <button onclick="showTab('favorites')" id="tab-favorites" class="tab-button">
+                    Mes favoris
+                </button>
+                <button onclick="showTab('searches')" id="tab-searches" class="tab-button">
+                    Recherches sauvegardées
+                </button>
+            </nav>
+        </div>
+
+        <div class="tabs-content">
+            <!-- Onglet: Mes annonces -->
+            <div id="content-announcements" class="tab-content active">
+                <div th:if="${!announcements.isEmpty()}" class="tab-grid">
+                    <div th:each="announcement : ${announcements}" class="tab-item-card">
+                        <div class="tab-item-image">
+                            <img th:if="${!announcement.images.isEmpty()}"
+                                 th:src="@{/images/{id}/download(id=${announcement.images.iterator().next().id})}">
+                        </div>
+                        <div class="tab-item-content">
+                            <h3 class="tab-item-title" th:text="${announcement.title}">Titre</h3>
+                            <div class="tab-item-actions">
+                                <a th:href="@{/announcements/{id}(id=${announcement.id})}" class="btn-view-small">
+                                    Voir
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${announcements.isEmpty()}" class="tab-empty">
+                    <p>Aucune annonce publiée.</p>
+                </div>
+            </div>
+
+            <!-- Onglet: Mes favoris -->
+            <div id="content-favorites" class="tab-content">
+                <div th:if="${!favorites.isEmpty()}" class="tab-grid">
+                    <div th:each="favorite : ${favorites}" class="tab-item-card">
+                        <div class="tab-item-content">
+                            <h3 class="tab-item-title" th:text="${favorite.announcement.title}">Titre</h3>
+                            <div class="tab-item-actions">
+                                <a th:href="@{/announcements/{id}(id=${favorite.announcement.id})}" class="btn-view-small">
+                                    Voir
+                                </a>
+                                <form th:action="@{/favorites}" method="POST" style="flex: 1;">
+                                    <input type="hidden" name="_method" value="DELETE"/>
+                                    <input type="hidden" name="announcementId" th:value="${favorite.announcement.id}"/>
+                                    <button type="submit" class="btn-remove" style="width: 100%;">
+                                        Retirer
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${favorites.isEmpty()}" class="tab-empty">
+                    <p>Aucun favori.</p>
+                </div>
+            </div>
+
+            <!-- Onglet: Recherches -->
+            <div id="content-searches" class="tab-content">
+                <div th:if="${!savedSearches.isEmpty()}">
+                    <div th:each="search : ${savedSearches}" class="tab-item-card" style="margin-bottom: 1rem;">
+                        <div class="tab-item-content">
+                            <h3 class="tab-item-title" th:text="${search.name}">Nom</h3>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${savedSearches.isEmpty()}" class="tab-empty">
+                    <p>Aucune recherche sauvegardée.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="scripts">
+    <script>
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            document.getElementById('content-' + tabName).classList.add('active');
+            document.getElementById('tab-' + tabName).classList.add('active');
+        }
+    </script>
+</th:block>
+
+</body>
+</html>

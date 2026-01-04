@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Mes favoris - DonoPlatform</title>
+    <link rel="stylesheet" th:href="@{/css/collections.css}">
+</head>
+<body>
+<div layout:fragment="content">
+    <!-- En-tête -->
+    <div class="favorites-header">
+        <div class="favorites-header-info">
+            <h1>❤️ Mes favoris</h1>
+            <p>
+                <span th:text="${favorites.size()}">0</span> annonce(s) dans vos favoris
+            </p>
+        </div>
+
+        <div class="favorites-actions">
+            <a th:href="@{/announcements}" class="btn-create">
+                📢 Parcourir les annonces
+            </a>
+
+            <!-- Bouton Tout supprimer -->
+            <form th:if="${!favorites.isEmpty()}"
+                  th:action="@{/favorites/clear}"
+                  method="POST"
+                  onsubmit="return confirm('Voulez-vous vraiment supprimer tous vos favoris ?');"
+                  style="display: inline;">
+                <button type="submit" class="btn-clear-favorites">
+                    🗑️ Tout supprimer
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Grille des favoris -->
+    <div th:if="${!favorites.isEmpty()}" class="favorites-grid">
+
+        <div th:each="favorite : ${favorites}" class="favorite-card">
+
+            <!-- Image -->
+            <div class="favorite-image">
+                <img th:if="${!favorite.announcement.images.isEmpty()}"
+                     th:src="@{/api/v1/images/{id}/download(id=${favorite.announcement.images.iterator().next().id})}"
+                     th:alt="${favorite.announcement.title}">
+                <div th:unless="${!favorite.announcement.images.isEmpty()}" class="favorite-image-placeholder">
+                    📦
+                </div>
+
+                <!-- Badge favori avec formulaire -->
+                <div class="favorite-badge">
+                    <form th:action="@{/favorites/toggle}" method="POST">
+                        <input type="hidden" name="announcementId" th:value="${favorite.announcement.id}">
+                        <button type="submit" class="btn-toggle-favorite">
+                            ❤️
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Contenu -->
+            <div class="favorite-content">
+                <!-- Titre -->
+                <h3 class="favorite-title" th:text="${favorite.announcement.title}">
+                    Titre de l'annonce
+                </h3>
+
+                <!-- Description -->
+                <p class="favorite-description" th:text="${favorite.announcement.description}">
+                    Description de l'annonce...
+                </p>
+
+                <!-- Informations du donneur -->
+                <div class="favorite-owner">
+                    <div class="favorite-owner-avatar">
+                        <span th:text="${favorite.announcement.ownerUsername.substring(0,1).toUpperCase()}">U</span>
+                    </div>
+                    <span>Par <span class="favorite-owner-name" th:text="${favorite.announcement.ownerUsername}">user</span></span>
+                </div>
+
+                <!-- Badges -->
+                <div class="favorite-tags">
+                    <span th:classappend="${favorite.announcement.status.name() == 'AVAILABLE' ? 'tag-available' :
+                                          favorite.announcement.status.name() == 'RESERVED' ? 'tag-reserved' :
+                                          'tag-given'}"
+                          class="favorite-tag"
+                          th:text="${favorite.announcement.status.label}">
+                        Disponible
+                    </span>
+                    <span class="favorite-tag tag-condition" th:text="${favorite.announcement.itemCondition.label}">
+                        État
+                    </span>
+                    <span th:if="${favorite.announcement.handDelivery}"
+                          class="favorite-tag"
+                          style="background: #E9D5FF; color: #6B21A8;">
+                        🤝 Main propre
+                    </span>
+                    <span th:if="${favorite.announcement.canShip}"
+                          class="favorite-tag"
+                          style="background: #E0E7FF; color: #3730A3;">
+                        📦 Envoi
+                    </span>
+                </div>
+
+                <!-- Footer -->
+                <div class="favorite-footer">
+                    <span>📍 <span th:text="${favorite.announcement.geographicArea}">Zone</span></span>
+                    <span th:text="${#temporals.format(favorite.createdAt, 'dd/MM/yyyy')}">
+                        Date
+                    </span>
+                </div>
+
+                <!-- Actions -->
+                <div class="favorite-actions-buttons">
+                    <a th:href="@{/announcements/{id}(id=${favorite.announcement.id})}" class="btn-view-favorite">
+                        👁️ Voir détails
+                    </a>
+
+                    <!-- Formulaire pour retirer des favoris -->
+                    <form th:action="@{/favorites/toggle}" method="POST" style="flex: 1;">
+                        <input type="hidden" name="announcementId" th:value="${favorite.announcement.id}">
+                        <button type="submit" class="btn-remove-favorite" style="width: 100%;">
+                            🗑️ Retirer
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message si vide -->
+    <div th:if="${favorites.isEmpty()}" class="empty-state">
+        <div class="empty-state-icon">❤️</div>
+        <h2 class="empty-state-title">Aucun favori pour le moment</h2>
+        <p class="empty-state-text">
+            Parcourez les annonces et ajoutez celles qui vous intéressent à vos favoris
+        </p>
+        <a th:href="@{/announcements}" class="empty-state-btn">
+            📢 Découvrir les annonces
+        </a>
+    </div>
+</div>
+</body>
+</html>
